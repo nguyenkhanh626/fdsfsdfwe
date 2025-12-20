@@ -10,13 +10,13 @@ import java.util.Locale;
 
 public class QuanLyNhanVienGUI extends JFrame {
 
-    // Danh sách dữ liệu (Dùng chung cho toàn bộ ứng dụng)
+    
     List<NhanVien> danhSachNV;
     List<PhongBan> danhSachPB;
     List<DuAn> danhSachDuAn;
     private List<LogEntry> danhSachLog;
 
-    // Các Tab chức năng
+    
     private JTabbedPane tabbedPane;
     private TabNhanVien tabNhanVien;
     private TabPhongBan tabPhongBan;
@@ -30,7 +30,7 @@ public class QuanLyNhanVienGUI extends JFrame {
     private QuanLyTaiKhoan quanLyTaiKhoan; 
     private String currentUser = ""; 
     
-    // Header components
+    
     private JButton btnTaoTaiKhoan; 
     private JLabel lblXinChao; 
     private JLabel lblThoiGianPhien; 
@@ -38,7 +38,7 @@ public class QuanLyNhanVienGUI extends JFrame {
     private long startSessionTime;   
 
     public QuanLyNhanVienGUI() {
-        //Khởi tạo Database
+        
         DatabaseHandler.createNewDatabase();
         
         setTitle("Phần mềm Quản lý Nhân sự (Connected SQLite)");
@@ -49,7 +49,7 @@ public class QuanLyNhanVienGUI extends JFrame {
         currencyFormatter = NumberFormat.getCurrencyInstance(Locale.of("vi", "VN"));
         quanLyTaiKhoan = new QuanLyTaiKhoan();
         
-        // Khởi tạo các list chứa dữ liệu
+        
         danhSachNV = new ArrayList<>();
         danhSachPB = new ArrayList<>();
         danhSachDuAn = new ArrayList<>();
@@ -82,12 +82,12 @@ public class QuanLyNhanVienGUI extends JFrame {
         refreshAllTabs();
     }
 
-    // --- LOAD DỮ LIỆU & NẠP MẪU ---
+    //LOAD DỮ LIỆU, NẠP MẪU
     private void loadDataFromDB() {
         try (Connection conn = DatabaseHandler.connect();
              Statement stmt = conn.createStatement()) {
             
-            // 1. Load Phòng Ban
+            
             ResultSet rsCheckPB = stmt.executeQuery("SELECT COUNT(*) FROM phong_ban");
             rsCheckPB.next();
             if (rsCheckPB.getInt(1) == 0) {
@@ -99,7 +99,7 @@ public class QuanLyNhanVienGUI extends JFrame {
                 danhSachPB.add(new PhongBan(rsPB.getString("ma_pb"), rsPB.getString("ten_pb")));
             }
 
-            // 2. Load Dự Án
+            
             ResultSet rsCheckDA = stmt.executeQuery("SELECT COUNT(*) FROM du_an");
             rsCheckDA.next();
             if (rsCheckDA.getInt(1) == 0) {
@@ -113,7 +113,7 @@ public class QuanLyNhanVienGUI extends JFrame {
                 danhSachDuAn.add(new DuAn(rsDA.getString("ma_da"), rsDA.getString("ten_da"), rsDA.getInt("do_phuc_tap")));
             }
 
-            // 3. Load Nhân Viên
+           
             ResultSet rsCheckNV = stmt.executeQuery("SELECT COUNT(*) FROM nhan_vien");
             rsCheckNV.next();
             if (rsCheckNV.getInt(1) == 0) {
@@ -141,7 +141,7 @@ public class QuanLyNhanVienGUI extends JFrame {
                 danhSachNV.add(nv);
             }
 
-            // [QUAN TRỌNG] 4. Load Phân Công (Đưa nhân viên vào dự án)
+            
             ResultSet rsPC = stmt.executeQuery("SELECT * FROM phan_cong");
             while (rsPC.next()) {
                 String maDA = rsPC.getString("ma_da");
@@ -156,13 +156,13 @@ public class QuanLyNhanVienGUI extends JFrame {
                         .filter(n -> n.getMaNhanVien().equals(maNV))
                         .findFirst().orElse(null);
 
-                // Nếu tìm thấy cả 2 thì add vào list của dự án
+                
                 if (da != null && nv != null) {
                     da.addThanhVien(nv);
                 }
             }
 
-            // 5. Load Nhật ký
+            
             ResultSet rsLog = stmt.executeQuery("SELECT * FROM nhat_ky ORDER BY id DESC LIMIT 50");
             while (rsLog.next()) {
                  danhSachLog.add(new LogEntry(
