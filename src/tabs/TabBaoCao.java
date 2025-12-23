@@ -1,16 +1,22 @@
+package tabs;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
+import MainApp.*;
+import doituong.*;
+
 import java.awt.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class TabBaoCao extends JPanel { 
+public class TabBaoCao extends JPanel {
 
     private QuanLyNhanVienGUI parent;
     private List<NhanVien> danhSachNV;
- 
+
     private DefaultTableModel modelTopThuong;
     private JTable tableTopThuong;
     private DefaultTableModel modelTopPhat;
