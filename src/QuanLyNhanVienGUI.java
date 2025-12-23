@@ -422,7 +422,7 @@ public class QuanLyNhanVienGUI extends JFrame {
         updateDuAnComboBox();
         if (tabDuAn != null) tabDuAn.refreshTableDuAn(); 
         refreshLuongTable();
-        refreshBaoCaoTab();
+        refreshBaoCaoTab(); 
         if (tabNhatKy != null) tabNhatKy.refreshLogTable();
         if (tabNhatKy != null) tabNhatKy.refreshLogTable();
     }
