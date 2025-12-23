@@ -10,7 +10,7 @@ public class TabBaoCao extends JPanel {
 
     private QuanLyNhanVienGUI parent;
     private List<NhanVien> danhSachNV;
-
+ 
     private DefaultTableModel modelTopThuong;
     private JTable tableTopThuong;
     private DefaultTableModel modelTopPhat;
