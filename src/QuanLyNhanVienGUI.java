@@ -11,7 +11,7 @@ import java.util.Locale;
 public class QuanLyNhanVienGUI extends JFrame {
 
     
-    List<NhanVien> danhSachNV;
+    List<NhanVien> danhSachNV; 
     List<PhongBan> danhSachPB;
     List<DuAn> danhSachDuAn;
     private List<LogEntry> danhSachLog;
