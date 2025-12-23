@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class TabBaoCao extends JPanel {
+public class TabBaoCao extends JPanel { 
 
     private QuanLyNhanVienGUI parent;
     private List<NhanVien> danhSachNV;
