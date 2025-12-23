@@ -426,7 +426,7 @@ public class QuanLyNhanVienGUI extends JFrame {
         if (tabNhatKy != null) tabNhatKy.refreshLogTable();
         if (tabNhatKy != null) tabNhatKy.refreshLogTable();
     }
-
+ 
     public void refreshBaoCaoTab() { if (tabBaoCao != null) tabBaoCao.refreshBaoCao(); }
     public void refreshLuongTable() { if (tabLuong != null) tabLuong.refreshLuongTable(); }
     public void locNhanVienTheoPhongBan() { if (tabPhongBan != null) tabPhongBan.locNhanVienTheoPhongBan(); }
