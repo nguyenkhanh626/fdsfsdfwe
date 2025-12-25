@@ -1,20 +1,25 @@
 package tabs;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-
-import MainApp.*;
-import dataa.*;
-import objects.*;
-
+import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.SQLException;
-import java.util.List;
 
-public class TabDuAn extends JPanel {
-    
+import MainApp.*;
+import dataa.DatabaseHandler;
+import objects.*;
+import ui.components.*; 
+
+public class TabDuAn extends JPanel
+{
     private QuanLyNhanVienGUI parent;
     private List<NhanVien> danhSachNV;
     private List<DuAn> danhSachDuAn;
@@ -28,190 +33,210 @@ public class TabDuAn extends JPanel {
     private DefaultTableModel modelThanhVienDuAn;
     private JTable tableThanhVienDuAn;
 
-    public TabDuAn(QuanLyNhanVienGUI parent) {
+    public TabDuAn(QuanLyNhanVienGUI parent)
+    {
         this.parent = parent;
         this.danhSachNV = parent.danhSachNV;
-        this.danhSachDuAn = parent.danhSachDuAn;
-        
-        setLayout(new BorderLayout());
-        
-        JPanel crudPanel = new JPanel(new BorderLayout(10, 10));
-        crudPanel.setBorder(BorderFactory.createTitledBorder("Quản lý Dự án"));
+        this.danhSachDuAn = (parent.danhSachDuAn != null) ? parent.danhSachDuAn : new ArrayList<>();
 
-        JPanel formDuAnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        formDuAnPanel.add(new JLabel("Mã Dự án:"));
-        txtMaDuAn = new JTextField(10);
-        formDuAnPanel.add(txtMaDuAn);
+        setLayout(new BorderLayout(10, 10));
+        setBackground(new Color(241, 245, 249)); 
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // 1. Tạo bảng và Cột thiếu
+        ensureTableExists();
+
+        // --- GIAO DIỆN ---
+        RoundedPanel crudPanel = new RoundedPanel(15, Color.WHITE);
+        crudPanel.setLayout(new BorderLayout(5, 5));
+        crudPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        formDuAnPanel.add(new JLabel("Tên Dự án:"));
-        txtTenDuAn = new JTextField(20);
-        formDuAnPanel.add(txtTenDuAn);
+        JPanel topDA = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        topDA.setOpaque(false);
+        JLabel lbl1 = new JLabel("QUẢN LÝ DỰ ÁN:");
+        lbl1.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lbl1.setForeground(new Color(30, 41, 59));
+        topDA.add(lbl1);
+
+        topDA.add(new JLabel(" Mã DA:"));
+        txtMaDuAn = new JTextField(8); setupTextField(txtMaDuAn); topDA.add(txtMaDuAn);
         
-        formDuAnPanel.add(new JLabel("Độ phức tạp:"));
+        topDA.add(new JLabel(" Tên DA:"));
+        txtTenDuAn = new JTextField(15); setupTextField(txtTenDuAn); topDA.add(txtTenDuAn);
+        
+        topDA.add(new JLabel(" Độ khó:"));
         cmbDoPhucTap = new JComboBox<>(new Integer[]{1, 2, 3});
-        formDuAnPanel.add(cmbDoPhucTap);
+        cmbDoPhucTap.setBackground(Color.WHITE);
+        topDA.add(cmbDoPhucTap);
         
-        JButton btnThemDuAn = new JButton("Thêm Dự án");
+        ModernButton btnThemDuAn = new ModernButton("Thêm Dự án", new Color(22, 163, 74), new Color(21, 128, 61));
+        btnThemDuAn.setPreferredSize(new Dimension(110, 32));
         btnThemDuAn.addActionListener(e -> themDuAn());
-        formDuAnPanel.add(btnThemDuAn);
+        topDA.add(btnThemDuAn);
         
-        crudPanel.add(formDuAnPanel, BorderLayout.NORTH);
+        crudPanel.add(topDA, BorderLayout.NORTH);
         
-        String[] columnsDuAn = {"Mã DA", "Tên Dự án", "Độ phức tạp", "Số lượng NS"};
+        String[] columnsDuAn = {"Mã DA", "Tên Dự án", "Độ phức tạp"};
         modelDuAn = new DefaultTableModel(columnsDuAn, 0) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
         };
         tableDuAn = new JTable(modelDuAn);
+        setupTable(tableDuAn);
         
-        tableDuAn.getColumnModel().getColumn(0).setPreferredWidth(80);
-        tableDuAn.getColumnModel().getColumn(1).setPreferredWidth(200);
-        tableDuAn.getColumnModel().getColumn(2).setPreferredWidth(80);
-        tableDuAn.getColumnModel().getColumn(3).setPreferredWidth(100);
+        JScrollPane scrollDA = new JScrollPane(tableDuAn);
+        scrollDA.getViewport().setBackground(Color.WHITE);
+        scrollDA.setPreferredSize(new Dimension(0, 200)); 
+        crudPanel.add(scrollDA, BorderLayout.CENTER);
+        
+        RoundedPanel memberPanel = new RoundedPanel(15, Color.WHITE);
+        memberPanel.setLayout(new BorderLayout(5, 5));
+        memberPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        crudPanel.add(new JScrollPane(tableDuAn), BorderLayout.CENTER);
+        JPanel topMem = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        topMem.setOpaque(false);
+        JLabel lbl2 = new JLabel("THÀNH VIÊN DỰ ÁN:");
+        lbl2.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lbl2.setForeground(new Color(30, 41, 59));
+        topMem.add(lbl2);
         
-        JPanel memberPanel = new JPanel(new BorderLayout(10, 10));
-        memberPanel.setBorder(BorderFactory.createTitledBorder("Quản lý Thành viên Dự án"));
-        
-        JPanel memberControlPanel = new JPanel(new BorderLayout());
-        
-        JPanel selectDuAnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        selectDuAnPanel.add(new JLabel("Chọn Dự án:"));
+        topMem.add(new JLabel(" Chọn Dự án:"));
         cmbChonDuAn = new JComboBox<>();
+        cmbChonDuAn.setBackground(Color.WHITE);
+        cmbChonDuAn.setPreferredSize(new Dimension(180, 30));
         cmbChonDuAn.addActionListener(e -> locThanhVienTheoDuAn());
-        selectDuAnPanel.add(cmbChonDuAn);
+        topMem.add(cmbChonDuAn);
         
-        JPanel addMemberPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        addMemberPanel.add(new JLabel("Nhập Mã NV:"));
-        txtMaNVThemVaoDuAn = new JTextField(10);
-        addMemberPanel.add(txtMaNVThemVaoDuAn);
-        JButton btnThemNVVaoDuAn = new JButton("Thêm Nhân viên");
-        btnThemNVVaoDuAn.addActionListener(e -> themNhanVienVaoDuAn());
-        addMemberPanel.add(btnThemNVVaoDuAn);
+        topMem.add(Box.createHorizontalStrut(20));
+        
+        topMem.add(new JLabel("Mã NV thêm:"));
+        txtMaNVThemVaoDuAn = new JTextField(10); setupTextField(txtMaNVThemVaoDuAn);
+        topMem.add(txtMaNVThemVaoDuAn);
+        
+        ModernButton btnThemNV = new ModernButton("Thêm NV vào DA", new Color(37, 99, 235), new Color(29, 78, 216));
+        btnThemNV.setPreferredSize(new Dimension(130, 32));
+        btnThemNV.addActionListener(e -> themNhanVienVaoDuAn());
+        topMem.add(btnThemNV);
 
-        memberControlPanel.add(selectDuAnPanel, BorderLayout.NORTH);
-        memberControlPanel.add(addMemberPanel, BorderLayout.CENTER);
-        
-        memberPanel.add(memberControlPanel, BorderLayout.NORTH);
+        memberPanel.add(topMem, BorderLayout.NORTH);
 
         String[] columnsThanhVien = {"Mã NV", "Họ Tên", "Phòng ban"};
         modelThanhVienDuAn = new DefaultTableModel(columnsThanhVien, 0) {
              @Override public boolean isCellEditable(int row, int column) { return false; }
         };
         tableThanhVienDuAn = new JTable(modelThanhVienDuAn);
-        memberPanel.add(new JScrollPane(tableThanhVienDuAn), BorderLayout.CENTER);
+        setupTable(tableThanhVienDuAn);
+        
+        JScrollPane scrollMem = new JScrollPane(tableThanhVienDuAn);
+        scrollMem.getViewport().setBackground(Color.WHITE);
+        memberPanel.add(scrollMem, BorderLayout.CENTER);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, crudPanel, memberPanel);
         splitPane.setResizeWeight(0.5);
+        splitPane.setBorder(null);
+        splitPane.setOpaque(false);
+        
         add(splitPane, BorderLayout.CENTER);
         
-        refreshTableDuAn(); 
+        refreshTableDuAn();
+        updateDuAnComboBox();
     }
-    
-    private void themDuAn() {
+
+    private void ensureTableExists() {
+        try (Connection conn = DatabaseHandler.connect();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("CREATE TABLE IF NOT EXISTS du_an (ma_da TEXT PRIMARY KEY, ten_da TEXT, do_phuc_tap INTEGER)");
+            stmt.execute("CREATE TABLE IF NOT EXISTS phan_cong (ma_da TEXT, ma_nv TEXT, PRIMARY KEY(ma_da, ma_nv))");
+            try {
+                stmt.execute("ALTER TABLE nhan_vien ADD COLUMN diem_thuong_du_an INTEGER DEFAULT 0");
+            } catch (SQLException e) {}
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    private void themDuAn() 
+    {
         String maDA = txtMaDuAn.getText().trim();
         String tenDA = txtTenDuAn.getText().trim();
         Integer doPhucTap = (Integer) cmbDoPhucTap.getSelectedItem();
 
-        if (maDA.isEmpty() || tenDA.isEmpty()) { 
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đủ thông tin!");
-            return; 
-        }
-        if (danhSachDuAn.stream().anyMatch(da -> da.getMaDuAn().equals(maDA))) { 
-            JOptionPane.showMessageDialog(this, "Mã dự án đã tồn tại!");
-            return; 
-        }
+        if (maDA.isEmpty() || tenDA.isEmpty()) { JOptionPane.showMessageDialog(this, "Thiếu thông tin!"); return; }
 
-        String sql = "INSERT INTO du_an(ma_da, ten_da, do_phuc_tap) VALUES(?,?,?)";
         try (Connection conn = DatabaseHandler.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, maDA);
-            pstmt.setString(2, tenDA);
-            pstmt.setInt(3, doPhucTap);
-            pstmt.executeUpdate();
+             PreparedStatement p = conn.prepareStatement("INSERT INTO du_an(ma_da, ten_da, do_phuc_tap) VALUES(?,?,?)")) {
+            p.setString(1, maDA);
+            p.setString(2, tenDA);
+            p.setInt(3, doPhucTap);
+            p.executeUpdate();
             
             DuAn da = new DuAn(maDA, tenDA, doPhucTap);
             danhSachDuAn.add(da);
-            
             refreshTableDuAn();
-            parent.updateDuAnComboBox();
+            updateDuAnComboBox();
             
-            parent.ghiNhatKy("Thêm Dự án", "Mã: " + maDA);
             JOptionPane.showMessageDialog(this, "Thêm dự án thành công!");
-            txtMaDuAn.setText("");
-            txtTenDuAn.setText("");
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi Database: " + e.getMessage());
+            txtMaDuAn.setText(""); txtTenDuAn.setText("");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi (có thể mã trùng): " + e.getMessage());
         }
     }
 
-    private void themNhanVienVaoDuAn() {
+    private void themNhanVienVaoDuAn() 
+    {
         DuAn selectedDA = (DuAn) cmbChonDuAn.getSelectedItem();
         String maNV = txtMaNVThemVaoDuAn.getText().trim();
 
-        if (selectedDA == null) { JOptionPane.showMessageDialog(this, "Chưa chọn dự án!"); return; }
-        if (maNV.isEmpty()) { JOptionPane.showMessageDialog(this, "Chưa nhập mã NV!"); return; }
+        if (selectedDA == null || maNV.isEmpty()) { JOptionPane.showMessageDialog(this, "Chưa chọn DA hoặc nhập mã NV!"); return; }
 
         NhanVien nvFound = null;
-        for (NhanVien nv : danhSachNV) {
-            if (nv.getMaNhanVien().equals(maNV)) {
-                nvFound = nv;
-                break;
+        if(danhSachNV != null) {
+            for (NhanVien nv : danhSachNV) {
+                if (nv.getMaNhanVien().equals(maNV)) { nvFound = nv; break; }
             }
         }
-        if (nvFound == null) { JOptionPane.showMessageDialog(this, "Không tìm thấy NV!"); return; }
-        if (selectedDA.hasThanhVien(nvFound)) { JOptionPane.showMessageDialog(this, "Nhân viên này đã ở trong dự án!"); return; }
+        if (nvFound == null) { JOptionPane.showMessageDialog(this, "Mã NV không tồn tại!"); return; }
 
-        int diemThuong = selectedDA.getDoPhucTap();
-        
-        // SQL Transaction
-        String sqlInsert = "INSERT INTO phan_cong(ma_da, ma_nv) VALUES(?,?)";
-        String sqlUpdateDiem = "UPDATE nhan_vien SET diem_thuong_da = ? WHERE ma_nv = ?";
-
+        // --- CHECK TRÙNG LẶP ---
         try (Connection conn = DatabaseHandler.connect()) {
-            conn.setAutoCommit(false); 
-
-            try (PreparedStatement pstmt1 = conn.prepareStatement(sqlInsert)) {
-                pstmt1.setString(1, selectedDA.getMaDuAn());
-                pstmt1.setString(2, nvFound.getMaNhanVien());
-                pstmt1.executeUpdate();
-            }
-
-            nvFound.addDiemThuongDuAn(diemThuong);
-            try (PreparedStatement pstmt2 = conn.prepareStatement(sqlUpdateDiem)) {
-                pstmt2.setInt(1, nvFound.getDiemThuongDuAn());
-                pstmt2.setString(2, nvFound.getMaNhanVien());
-                pstmt2.executeUpdate();
-            }
-
-            conn.commit(); 
-
-            selectedDA.addThanhVien(nvFound);
             
+            // 1. Kiểm tra xem NV đã có trong dự án này chưa
+            String checkSql = "SELECT COUNT(*) FROM phan_cong WHERE ma_da = ? AND ma_nv = ?";
+            try (PreparedStatement pCheck = conn.prepareStatement(checkSql)) {
+                pCheck.setString(1, selectedDA.getMaDuAn());
+                pCheck.setString(2, maNV);
+                ResultSet rs = pCheck.executeQuery();
+                if (rs.next() && rs.getInt(1) > 0) {
+                    JOptionPane.showMessageDialog(this, "Nhân viên này ĐÃ CÓ trong dự án rồi!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    return; // Dừng lại, không thêm nữa
+                }
+            }
+
+            // 2. Thêm vào bảng phân công
+            try (PreparedStatement p = conn.prepareStatement("INSERT INTO phan_cong(ma_da, ma_nv) VALUES(?,?)")) {
+                p.setString(1, selectedDA.getMaDuAn());
+                p.setString(2, maNV);
+                p.executeUpdate();
+            }
+
+            // 3. Cập nhật điểm thưởng
+            int diemThuong = selectedDA.getDoPhucTap();
+            nvFound.addDiemThuongDuAn(diemThuong);
+             
+            try (PreparedStatement p2 = conn.prepareStatement("UPDATE nhan_vien SET diem_thuong_du_an = ? WHERE ma_nv = ?")) {
+                p2.setInt(1, nvFound.getDiemThuongDuAn());
+                p2.setString(2, maNV);
+                p2.executeUpdate();
+            }
+
+            JOptionPane.showMessageDialog(this, "Thêm thành công! NV được cộng " + diemThuong + " điểm.");
+            txtMaNVThemVaoDuAn.setText("");
             locThanhVienTheoDuAn();
             
-            refreshTableDuAn();
-            
-            JOptionPane.showMessageDialog(this, "Đã thêm " + nvFound.getHoTen() + " vào dự án.\n(Đã lưu dữ liệu)",
-                    "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                    
-            txtMaNVThemVaoDuAn.setText("");
-            parent.ghiNhatKy("Phân công Dự án", "NV: " + maNV + " vào DA: " + selectedDA.getMaDuAn());
-            
-            parent.refreshLuongTable();
-            parent.refreshBaoCaoTab();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi Database: " + e.getMessage());
-             nvFound.setDiemThuongDuAn(nvFound.getDiemThuongDuAn() - diemThuong);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
         }
     }
 
-    private void locThanhVienTheoDuAn() {
+    private void locThanhVienTheoDuAn() 
+    {
         if (modelThanhVienDuAn == null || cmbChonDuAn == null) return;
         
         DuAn selectedDA = (DuAn) cmbChonDuAn.getSelectedItem();
@@ -219,42 +244,68 @@ public class TabDuAn extends JPanel {
         
         if (selectedDA == null) return;
         
-        for (NhanVien nv : selectedDA.getDanhSachThanhVien()) {
-            modelThanhVienDuAn.addRow(new Object[]{
-                nv.getMaNhanVien(),
-                nv.getHoTen(),
-                nv.getPhongBan()
-            });
-        }
+        String sql = "SELECT p.ma_nv, n.ho_ten, n.phong_ban FROM phan_cong p " +
+                     "LEFT JOIN nhan_vien n ON p.ma_nv = n.ma_nv " +
+                     "WHERE p.ma_da = ?";
+        
+        try (Connection conn = DatabaseHandler.connect();
+             PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setString(1, selectedDA.getMaDuAn());
+            ResultSet rs = p.executeQuery();
+            while(rs.next()) {
+                modelThanhVienDuAn.addRow(new Object[]{
+                    rs.getString("ma_nv"),
+                    rs.getString("ho_ten"),
+                    rs.getString("phong_ban")
+                });
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
     
-    public void refreshTableDuAn() {
-        if (modelDuAn == null) return;
+    public void refreshTableDuAn() 
+    {
+        danhSachDuAn.clear();
         modelDuAn.setRowCount(0);
-        for (DuAn da : danhSachDuAn) {
-             modelDuAn.addRow(new Object[]{
-                 da.getMaDuAn(), 
-                 da.getTenDuAn(), 
-                 da.getDoPhucTap(),
-                 da.getDanhSachThanhVien().size()
-             });
-        }
+        try (Connection conn = DatabaseHandler.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM du_an")) {
+            while(rs.next()) {
+                DuAn da = new DuAn(rs.getString("ma_da"), rs.getString("ten_da"), rs.getInt("do_phuc_tap"));
+                danhSachDuAn.add(da);
+                modelDuAn.addRow(new Object[]{da.getMaDuAn(), da.getTenDuAn(), da.getDoPhucTap()});
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
-    
-    public void updateDuAnComboBox() {
+
+    public void updateDuAnComboBox() 
+    {
         if (cmbChonDuAn == null) return;
-        Object selected = cmbChonDuAn.getSelectedItem();
         cmbChonDuAn.removeAllItems();
         for (DuAn da : danhSachDuAn) {
             cmbChonDuAn.addItem(da);
         }
-        if (selected != null) {
-            for(int i=0; i<cmbChonDuAn.getItemCount(); i++) {
-                if(cmbChonDuAn.getItemAt(i).getMaDuAn().equals(((DuAn)selected).getMaDuAn())){
-                    cmbChonDuAn.setSelectedIndex(i);
-                    break;
-                }
-            }
-        }
+    }
+
+    private void setupTextField(JTextField txt) {
+        txt.setPreferredSize(new Dimension(100, 30));
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txt.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.LIGHT_GRAY), 
+            BorderFactory.createEmptyBorder(0, 5, 0, 5)
+        ));
+    }
+
+    private void setupTable(JTable table) {
+        table.setRowHeight(30);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setSelectionBackground(new Color(219, 234, 254));
+        table.setSelectionForeground(Color.BLACK);
+        table.setShowVerticalLines(false);
+        table.setGridColor(new Color(241, 245, 249));
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        header.setBackground(new Color(248, 250, 252));
+        header.setForeground(new Color(71, 85, 105));
+        header.setPreferredSize(new Dimension(100, 35));
     }
 }

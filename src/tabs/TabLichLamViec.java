@@ -7,8 +7,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
 import MainApp.*;
-import dataa.*;
 import objects.*;
+import dataa.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -97,6 +97,7 @@ public class TabLichLamViec extends JPanel {
             currentCalendar.set(Calendar.DAY_OF_MONTH, 1);
             currentMonth = currentCalendar.get(Calendar.MONTH);
             currentYear = currentCalendar.get(Calendar.YEAR);
+            loadDuLieuLichThang(currentMonth, currentYear);
             refreshCalendar();
         });
 
@@ -228,7 +229,7 @@ public class TabLichLamViec extends JPanel {
         p.add(new JLabel(text));
         return p;
     }
-    
+
     // ***LOGIC & RENDERING
     
     private void changeMonth(int offset) {
@@ -512,7 +513,7 @@ public class TabLichLamViec extends JPanel {
         }
     }
 
-     // Hiển thị Dialog chi tiết để chỉnh sửa thủ công cho 1 ngày
+    // Hiển thị Dialog chi tiết để chỉnh sửa thủ công cho 1 ngày
 
     private void showDetailDialog(String date, List<ShiftData> currentShifts) {
         JDialog dlg = new JDialog(parent, "Quản lý ca ngày: " + date, true);
@@ -606,7 +607,7 @@ public class TabLichLamViec extends JPanel {
         dlg.setVisible(true);
     }
 
-    /*
+     /*
      * Dialog Tự động xếp ca (Auto Schedule)
      * Tính năng nâng cao: Random hoặc Round-robin
      */
@@ -647,7 +648,7 @@ public class TabLichLamViec extends JPanel {
         gbc.gridy++;
         JButton btnRun = new JButton("BẮT ĐẦU XẾP CA");
         btnRun.setBackground(new Color(0, 153, 76));
-        btnRun.setForeground(Color.WHITE);
+        btnRun.setForeground(Color.BLACK);
         dlg.add(btnRun, gbc);
 
         btnRun.addActionListener(e -> {
@@ -716,8 +717,6 @@ public class TabLichLamViec extends JPanel {
 
         dlg.setVisible(true);
     }
-
-    //HELPER CLASSES (POJO)
 
     private class ShiftData {
         int id;

@@ -1,296 +1,374 @@
 package tabs;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
-import MainApp.*;
-import dataa.*;
-import objects.*;
+import MainApp.QuanLyNhanVienGUI;
+import dataa.DatabaseHandler;
+import objects.NhanVien;
+import objects.PhongBan; 
+import ui.components.*;
+import ui.dialogs.DialogThemNhanVien;
 
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TabNhanVien extends JPanel {
 
     private QuanLyNhanVienGUI parent;
-    private List<NhanVien> danhSachNV;
-    private List<PhongBan> danhSachPB;
-
-    private JComboBox<PhongBan> cmbPhongBanNV;
-    private DefaultTableModel modelNV;
     private JTable tableNV;
-    private JTextField txtMaNV, txtTenNV, txtSdt, txtEmail, txtNgaySinh, txtCccd, txtThamNien;
-    private JComboBox<String> cmbTieuChiTimKiem;
-    private JTextField txtTuKhoaTimKiem;
+    private DefaultTableModel tableModel;
+    private JComboBox<String> cmbPhongBanLoc;
+    private JTextField txtTimKiem;
+    private ModernButton btnThem, btnXoa, btnSua, btnTimKiem, btnRefresh;
 
     public TabNhanVien(QuanLyNhanVienGUI parent) {
         this.parent = parent;
-        this.danhSachNV = parent.danhSachNV; 
-        this.danhSachPB = parent.danhSachPB; 
+        setLayout(new BorderLayout(20, 20));
+        setBackground(new Color(241, 245, 249)); 
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        setLayout(new BorderLayout(10, 10));
+        // --- 1. TOOLBAR ---
+        RoundedPanel pnlToolbar = new RoundedPanel(15, Color.WHITE);
+        pnlToolbar.setPreferredSize(new Dimension(1000, 80));
+        pnlToolbar.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 20));
 
-        JPanel topPanel = new JPanel(new BorderLayout(0, 10));
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchPanel.setBorder(BorderFactory.createTitledBorder("Tìm kiếm & Lọc"));
-        
-        searchPanel.add(new JLabel("Tiêu chí:"));
-        String[] tieuChi = {"Mã Nhân viên", "Tên Nhân viên"};
-        cmbTieuChiTimKiem = new JComboBox<>(tieuChi);
-        searchPanel.add(cmbTieuChiTimKiem);
-        
-        searchPanel.add(new JLabel("    Từ khóa:"));
-        txtTuKhoaTimKiem = new JTextField(20);
-        searchPanel.add(txtTuKhoaTimKiem);
-        
-        txtTuKhoaTimKiem.getDocument().addDocumentListener(new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { xuLyTimKiem(); }
-            @Override public void removeUpdate(DocumentEvent e) { xuLyTimKiem(); }
-            @Override public void changedUpdate(DocumentEvent e) { xuLyTimKiem(); }
-        });
-        
-        cmbTieuChiTimKiem.addActionListener(e -> xuLyTimKiem());
-        topPanel.add(searchPanel, BorderLayout.NORTH); 
+        pnlToolbar.add(new JLabel("Lọc PB:"));
+        cmbPhongBanLoc = new JComboBox<>();
+        cmbPhongBanLoc.setPreferredSize(new Dimension(180, 35));
+        cmbPhongBanLoc.setBackground(Color.WHITE);
+        updatePhongBanComboBox(); 
+        pnlToolbar.add(cmbPhongBanLoc);
 
-        JPanel formPanel = new JPanel(new GridLayout(0, 4, 10, 5));
-        formPanel.setBorder(BorderFactory.createTitledBorder("Thông tin chi tiết")); 
+        txtTimKiem = new JTextField(15);
+        txtTimKiem.setPreferredSize(new Dimension(200, 35));
+        txtTimKiem.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+            BorderFactory.createEmptyBorder(0, 5, 0, 5)
+        ));
+        pnlToolbar.add(txtTimKiem);
         
-        formPanel.add(new JLabel("Mã NV:")); txtMaNV = new JTextField(); formPanel.add(txtMaNV);
-        formPanel.add(new JLabel("Tên NV:")); txtTenNV = new JTextField(); formPanel.add(txtTenNV);
-        formPanel.add(new JLabel("Phòng ban:")); cmbPhongBanNV = new JComboBox<>(); formPanel.add(cmbPhongBanNV);
-        formPanel.add(new JLabel("SĐT:")); txtSdt = new JTextField(); formPanel.add(txtSdt);
-        formPanel.add(new JLabel("Email:")); txtEmail = new JTextField(); formPanel.add(txtEmail);
-        formPanel.add(new JLabel("Ngày sinh:")); txtNgaySinh = new JTextField(); formPanel.add(txtNgaySinh);
-        formPanel.add(new JLabel("CCCD:")); txtCccd = new JTextField(); formPanel.add(txtCccd);
-        formPanel.add(new JLabel("Thâm niên:")); txtThamNien = new JTextField(); formPanel.add(txtThamNien);
-        
-        topPanel.add(formPanel, BorderLayout.CENTER);
-        
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnThemNV = new JButton("Thêm");
-        JButton btnSuaNV = new JButton("Sửa");
-        JButton btnXoaNV = new JButton("Xóa");
-        JButton btnLamMoiNV = new JButton("Làm mới");
+        btnTimKiem = new ModernButton("Tìm kiếm", new Color(59, 130, 246), new Color(37, 99, 235));
+        btnTimKiem.setPreferredSize(new Dimension(100, 35));
+        pnlToolbar.add(btnTimKiem);
 
-        btnThemNV.addActionListener(e -> themNhanVien());
-        btnSuaNV.addActionListener(e -> suaNhanVien());
-        btnXoaNV.addActionListener(e -> xoaNhanVien());
-        btnLamMoiNV.addActionListener(e -> lamMoiFormNV());
+        pnlToolbar.add(Box.createHorizontalStrut(30)); 
 
-        buttonPanel.add(btnThemNV); buttonPanel.add(btnSuaNV);
-        buttonPanel.add(btnXoaNV); buttonPanel.add(btnLamMoiNV);
+        btnThem = new ModernButton("+ Thêm Mới", new Color(22, 163, 74), new Color(21, 128, 61));
+        btnThem.setPreferredSize(new Dimension(120, 35));
         
-        topPanel.add(buttonPanel, BorderLayout.SOUTH);
-        add(topPanel, BorderLayout.NORTH);
+        btnSua = new ModernButton("Sửa", new Color(234, 179, 8), new Color(202, 138, 4));
+        btnSua.setPreferredSize(new Dimension(80, 35));
+        
+        btnXoa = new ModernButton("Xóa", new Color(220, 38, 38), new Color(185, 28, 28));
+        btnXoa.setPreferredSize(new Dimension(80, 35));
 
-        String[] columnNames = {"Mã NV", "Họ Tên", "Phòng ban", "SĐT", "Email", "Ngày sinh", "CCCD", "Thâm niên"};
-        modelNV = new DefaultTableModel(columnNames, 0) {
-            @Override public boolean isCellEditable(int row, int column) { return false; }
+        btnRefresh = new ModernButton("Tải lại", new Color(100, 116, 139), new Color(71, 85, 105));
+        btnRefresh.setPreferredSize(new Dimension(80, 35));
+
+        pnlToolbar.add(btnThem);
+        pnlToolbar.add(btnSua);
+        pnlToolbar.add(btnXoa);
+        pnlToolbar.add(btnRefresh);
+
+        add(pnlToolbar, BorderLayout.NORTH);
+
+        // --- 2. BẢNG DỮ LIỆU ---
+        String[] columnNames = {"Mã NV", "Họ Tên", "Phòng Ban", "Email", "SĐT", "Ngày Sinh", "Thâm Niên"};
+        
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
         };
-        tableNV = new JTable(modelNV);
-
-        tableNV.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) { hienThiThongTinLenFormNV(); }
-        });
         
-        add(new JScrollPane(tableNV), BorderLayout.CENTER);
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-    }
-    
-    private void xuLyTimKiem() {
-        String tuKhoa = txtTuKhoaTimKiem.getText().trim().toLowerCase();
-        String tieuChi = (String) cmbTieuChiTimKiem.getSelectedItem();
+        tableNV = new JTable(tableModel);
+        tableNV.setRowHeight(35);
+        tableNV.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tableNV.setSelectionBackground(new Color(219, 234, 254)); 
+        tableNV.setSelectionForeground(Color.BLACK);
+        tableNV.setShowVerticalLines(false);
+        tableNV.setGridColor(new Color(241, 245, 249));
         
-        modelNV.setRowCount(0);
-        for (NhanVien nv : danhSachNV) {
-            boolean thoaMan = false;
-            if (tuKhoa.isEmpty()) {
-                thoaMan = true; 
-            } else {
-                if ("Mã Nhân viên".equals(tieuChi)) {
-                    if (nv.getMaNhanVien().toLowerCase().contains(tuKhoa)) thoaMan = true;
-                } else if ("Tên Nhân viên".equals(tieuChi)) {
-                    if (nv.getHoTen().toLowerCase().contains(tuKhoa)) thoaMan = true;
-                }
-            }
-            if (thoaMan) {
-                modelNV.addRow(new Object[]{
-                    nv.getMaNhanVien(), nv.getHoTen(), nv.getPhongBan(),
-                    nv.getSdt(), nv.getEmail(), nv.getNgaySinh(),
-                    nv.getCccd(), nv.getThamNien()
-                });
-            }
-        }
-    }
+        JTableHeader header = tableNV.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.setBackground(new Color(248, 250, 252));
+        header.setForeground(new Color(71, 85, 105));
+        header.setPreferredSize(new Dimension(100, 45));
 
-    private void hienThiThongTinLenFormNV() {
-        int r = tableNV.getSelectedRow();
-        if (r == -1) return;
-        txtMaNV.setText(modelNV.getValueAt(r, 0).toString());
-        txtTenNV.setText(modelNV.getValueAt(r, 1).toString());
-        String tenPhongBan = modelNV.getValueAt(r, 2).toString();
-        txtSdt.setText(modelNV.getValueAt(r, 3).toString());
-        txtEmail.setText(modelNV.getValueAt(r, 4).toString());
-        txtNgaySinh.setText(modelNV.getValueAt(r, 5).toString());
-        txtCccd.setText(modelNV.getValueAt(r, 6).toString());
-        txtThamNien.setText(String.valueOf(modelNV.getValueAt(r, 7)));
-        for (int i = 0; i < cmbPhongBanNV.getItemCount(); i++) {
-            if (cmbPhongBanNV.getItemAt(i).getTenPhongBan().equals(tenPhongBan)) {
-                cmbPhongBanNV.setSelectedIndex(i);
-                break;
-            }
-        }
-        txtMaNV.setEditable(false);
-    }
-
-    private void themNhanVien() {
-        String maNV = txtMaNV.getText();
-        String tenNV = txtTenNV.getText();
-        PhongBan pb = (PhongBan) cmbPhongBanNV.getSelectedItem();
-        String sdt = txtSdt.getText();
-        String email = txtEmail.getText();
-        String ngaySinh = txtNgaySinh.getText();
-        String cccd = txtCccd.getText();
+        JScrollPane scrollPane = new JScrollPane(tableNV);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
         
-        int thamNien = 0;
-        try { thamNien = Integer.parseInt(txtThamNien.getText()); } catch(Exception ex) {}
+        JPanel tableContainer = new JPanel(new BorderLayout());
+        tableContainer.setBackground(Color.WHITE);
+        tableContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        tableContainer.add(scrollPane);
 
-        if (maNV.isEmpty() || tenNV.isEmpty() || pb == null) return;
-        if (danhSachNV.stream().anyMatch(nv -> nv.getMaNhanVien().equals(maNV))) {
-            JOptionPane.showMessageDialog(this, "Mã nhân viên đã tồn tại.", "Lỗi", JOptionPane.ERROR_MESSAGE); return;
-        }
+        add(tableContainer, BorderLayout.CENTER);
 
-        //SQL INSERT
-        String sql = "INSERT INTO nhan_vien(ma_nv, ho_ten, phong_ban, sdt, email, ngay_sinh, cccd, tham_nien) VALUES(?,?,?,?,?,?,?,?)";
-        try (Connection conn = DatabaseHandler.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, maNV);
-            pstmt.setString(2, tenNV);
-            pstmt.setString(3, pb.getTenPhongBan());
-            pstmt.setString(4, sdt);
-            pstmt.setString(5, email);
-            pstmt.setString(6, ngaySinh);
-            pstmt.setString(7, cccd);
-            pstmt.setInt(8, thamNien);
-            pstmt.executeUpdate();
-            
-            NhanVien nv = new NhanVien(maNV, tenNV, pb.getTenPhongBan(), sdt, email, ngaySinh, cccd, thamNien);
-            danhSachNV.add(nv);
-            xuLyTimKiem();
-            lamMoiFormNV();
-            parent.ghiNhatKy("Thêm nhân viên", "Đã thêm NV mới: " + maNV);
-            JOptionPane.showMessageDialog(this, "Thêm thành công!");
-            parent.refreshAllTabs();
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi Database: " + e.getMessage());
-        }
+        // --- 3. XỬ LÝ SỰ KIỆN ---
+        setupActions();
+        refreshTableNV(); 
     }
 
-    private void suaNhanVien() {
-        int r = tableNV.getSelectedRow();
-        if (r == -1) return;
-        String maNV = txtMaNV.getText(); 
-        String tenMoi = txtTenNV.getText();
-        PhongBan pbMoi = (PhongBan) cmbPhongBanNV.getSelectedItem();
-        String sdtMoi = txtSdt.getText();
-        String emailMoi = txtEmail.getText();
-        String ngaySinhMoi = txtNgaySinh.getText();
-        String cccdMoi = txtCccd.getText();
-        int thamNienMoi = 0;
-        try { thamNienMoi = Integer.parseInt(txtThamNien.getText()); } catch(Exception ex) {}
+    private void setupActions() {
+        cmbPhongBanLoc.addActionListener(e -> applyFilters());
+        btnTimKiem.addActionListener(e -> applyFilters());
+        txtTimKiem.addActionListener(e -> applyFilters());
 
-        //SQL UPDATE
-        String sql = "UPDATE nhan_vien SET ho_ten=?, phong_ban=?, sdt=?, email=?, ngay_sinh=?, cccd=?, tham_nien=? WHERE ma_nv=?";
-        try (Connection conn = DatabaseHandler.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, tenMoi);
-            pstmt.setString(2, pbMoi.getTenPhongBan());
-            pstmt.setString(3, sdtMoi);
-            pstmt.setString(4, emailMoi);
-            pstmt.setString(5, ngaySinhMoi);
-            pstmt.setString(6, cccdMoi);
-            pstmt.setInt(7, thamNienMoi);
-            pstmt.setString(8, maNV);
-            pstmt.executeUpdate();
-            
-            for(NhanVien nv : danhSachNV) {
-                if(nv.getMaNhanVien().equals(maNV)) {
-                    nv.setHoTen(tenMoi);
-                    nv.setPhongBan(pbMoi.getTenPhongBan());
-                    nv.setSdt(sdtMoi);
-                    nv.setEmail(emailMoi);
-                    nv.setNgaySinh(ngaySinhMoi);
-                    nv.setCccd(cccdMoi);
-                    nv.setThamNien(thamNienMoi);
-                    break;
-                }
-            }
-            xuLyTimKiem();
-            lamMoiFormNV();
-            parent.ghiNhatKy("Sửa nhân viên", "Cập nhật thông tin NV: " + maNV);
-            JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-            parent.refreshAllTabs();
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+        // --- CHỨC NĂNG THÊM ---
+        btnThem.addActionListener(e -> {
+            DialogThemNhanVien dialog = new DialogThemNhanVien(parent, null);
+            dialog.setVisible(true);
 
-    private void xoaNhanVien() {
-        int r = tableNV.getSelectedRow();
-        if (r == -1) return;
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn chắc chắn muốn xóa?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            String maNV = modelNV.getValueAt(r, 0).toString();
-            
-            //SQL DELETE
-            String sql = "DELETE FROM nhan_vien WHERE ma_nv=?";
-            try (Connection conn = DatabaseHandler.connect();
-                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                pstmt.setString(1, maNV);
-                pstmt.executeUpdate();
+            if (dialog.isConfirmed()) {
+                String maNV = generateSmartMaNV(parent.danhSachNV);
+                String hoTen = dialog.getHoTen();
+                String phongBan = dialog.getPhongBan(); 
+                String sdt = dialog.getSDT();
+                String email = dialog.getEmail();
+                String ngaySinh = dialog.getNgaySinh();
+                String cccd = dialog.getCCCD();
                 
-                danhSachNV.removeIf(nv -> nv.getMaNhanVien().equals(maNV));
-                xuLyTimKiem();
-                lamMoiFormNV();
-                parent.ghiNhatKy("Xóa nhân viên", "Đã xóa NV: " + maNV);
-                JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                parent.refreshAllTabs();
-            } catch (SQLException e) {
-                e.printStackTrace();
+                String sql = "INSERT INTO nhan_vien(ma_nv, ho_ten, phong_ban, sdt, email, ngay_sinh, cccd, tham_nien) VALUES(?,?,?,?,?,?,?,?)";
+                try (Connection conn = DatabaseHandler.connect();
+                     PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.setString(1, maNV);
+                    pstmt.setString(2, hoTen);
+                    pstmt.setString(3, phongBan);
+                    pstmt.setString(4, sdt);
+                    pstmt.setString(5, email);
+                    pstmt.setString(6, ngaySinh);
+                    pstmt.setString(7, cccd);
+                    pstmt.setInt(8, 0); 
+                    pstmt.executeUpdate();
+                    
+                    // Update RAM
+                    NhanVien nvMoi = new NhanVien(maNV, hoTen, phongBan, sdt, email, ngaySinh, cccd, 0);
+                    parent.danhSachNV.add(nvMoi);
+                    
+                    Toast.show("Đã thêm: " + hoTen);
+                    parent.ghiNhatKy("Thêm nhân viên", "Tạo mới NV: " + maNV);
+                    
+                    // Reset UI
+                    cmbPhongBanLoc.setSelectedIndex(0); 
+                    txtTimKiem.setText("");
+                    
+                    // QUAN TRỌNG: Cập nhật toàn bộ hệ thống (Dashboard, PhongBan Count)
+                    parent.refreshAllTabs(); 
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Toast.showError("Lỗi thêm: " + ex.getMessage());
+                }
             }
+        });
+
+        // --- CHỨC NĂNG SỬA ---
+        btnSua.addActionListener(e -> {
+            int selectedRow = tableNV.getSelectedRow();
+            if (selectedRow < 0) {
+                Toast.showError("Vui lòng chọn nhân viên cần sửa!");
+                return;
+            }
+            
+            String maNV = (String) tableModel.getValueAt(selectedRow, 0);
+            
+            // Tìm nhân viên trong RAM
+            NhanVien nvCanSua = parent.danhSachNV.stream()
+                .filter(nv -> nv.getMaNhanVien().equals(maNV))
+                .findFirst().orElse(null);
+            
+            if (nvCanSua == null) return;
+
+            DialogThemNhanVien dialog = new DialogThemNhanVien(parent, nvCanSua);
+            dialog.setVisible(true);
+
+            if (dialog.isConfirmed()) {
+                String hoTenMoi = dialog.getHoTen();
+                String pbMoi = dialog.getPhongBan();
+                String sdtMoi = dialog.getSDT();
+                String emailMoi = dialog.getEmail();
+                String cccdMoi = dialog.getCCCD();
+                String nsMoi = dialog.getNgaySinh();
+                
+                String sql = "UPDATE nhan_vien SET ho_ten=?, phong_ban=?, sdt=?, email=?, ngay_sinh=?, cccd=? WHERE ma_nv=?";
+                try (Connection conn = DatabaseHandler.connect();
+                     PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    
+                    pstmt.setString(1, hoTenMoi);
+                    pstmt.setString(2, pbMoi);
+                    pstmt.setString(3, sdtMoi);
+                    pstmt.setString(4, emailMoi);
+                    pstmt.setString(5, nsMoi);
+                    pstmt.setString(6, cccdMoi);
+                    pstmt.setString(7, maNV);
+                    pstmt.executeUpdate();
+                    
+                    // Update RAM
+                    nvCanSua.setHoTen(hoTenMoi);
+                    nvCanSua.setPhongBan(pbMoi);
+                    nvCanSua.setSdt(sdtMoi);
+                    nvCanSua.setEmail(emailMoi);
+                    nvCanSua.setCccd(cccdMoi);
+                    nvCanSua.setNgaySinh(nsMoi);
+                    
+                    Toast.show("Cập nhật thành công!");
+                    parent.ghiNhatKy("Sửa nhân viên", "Cập nhật NV: " + maNV);
+                    
+                    // QUAN TRỌNG: Đồng bộ lại Dashboard và các tab khác
+                    parent.refreshAllTabs();
+                    
+                } catch (Exception ex) {
+                    Toast.showError("Lỗi cập nhật: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        // --- CHỨC NĂNG XÓA ---
+        btnXoa.addActionListener(e -> {
+            int selectedRow = tableNV.getSelectedRow();
+            if (selectedRow >= 0) {
+                String maNV = (String) tableModel.getValueAt(selectedRow, 0);
+                String tenNV = (String) tableModel.getValueAt(selectedRow, 1);
+                
+                int confirm = JOptionPane.showConfirmDialog(this, 
+                    "Bạn chắc chắn muốn xóa: " + tenNV + "?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+                
+                if (confirm == JOptionPane.YES_OPTION) {
+                    try (Connection conn = DatabaseHandler.connect();
+                         PreparedStatement pstmt = conn.prepareStatement("DELETE FROM nhan_vien WHERE ma_nv = ?")) {
+                        pstmt.setString(1, maNV);
+                        pstmt.executeUpdate();
+                        
+                        parent.danhSachNV.removeIf(nv -> nv.getMaNhanVien().equals(maNV));
+                        
+                        Toast.show("Đã xóa thành công!");
+                        
+                        // QUAN TRỌNG: Đồng bộ lại toàn bộ
+                        parent.refreshAllTabs();
+                        
+                    } catch (Exception ex) {
+                        Toast.showError("Lỗi xóa: " + ex.getMessage());
+                    }
+                }
+            } else {
+                Toast.showError("Vui lòng chọn nhân viên cần xóa!");
+            }
+        });
+
+        // REFRESH
+        btnRefresh.addActionListener(e -> {
+            txtTimKiem.setText("");
+            cmbPhongBanLoc.setSelectedIndex(0);
+            parent.refreshAllTabs(); // Refresh toàn bộ hệ thống
+            Toast.show("Đã làm mới dữ liệu!");
+        });
+    }
+
+    private String generateSmartMaNV(List<NhanVien> list) {
+        int maxId = 0;
+        for (NhanVien nv : list) {
+            try {
+                String numPart = nv.getMaNhanVien().toUpperCase().replace("NV", "").trim();
+                int id = Integer.parseInt(numPart);
+                if (id > maxId) maxId = id;
+            } catch (Exception e) {}
+        }
+        return "NV" + String.format("%03d", maxId + 1);
+    }
+
+    private void applyFilters() {
+        String keyword = txtTimKiem.getText().toLowerCase().trim();
+        String selectedPB = (String) cmbPhongBanLoc.getSelectedItem();
+        
+        if (parent.danhSachNV == null) parent.danhSachNV = new ArrayList<>();
+
+        List<NhanVien> ketQua = parent.danhSachNV.stream()
+            .filter(nv -> {
+                boolean matchPB = true;
+                if (selectedPB != null && !selectedPB.equals("Tất cả")) {
+                    try {
+                        String pbNV = nv.getPhongBan().toLowerCase().trim();
+                        String pbLoc = selectedPB.toLowerCase();
+                        String maPbLoc = pbLoc.split("-")[0].trim();
+                        if (pbNV.equals(maPbLoc) || pbLoc.contains(pbNV)) matchPB = true;
+                        else matchPB = false;
+                    } catch (Exception e) { matchPB = false; }
+                }
+                
+                boolean matchSearch = true;
+                if (!keyword.isEmpty()) {
+                    matchSearch = nv.getHoTen().toLowerCase().contains(keyword) ||
+                                  nv.getMaNhanVien().toLowerCase().contains(keyword) ||
+                                  nv.getEmail().toLowerCase().contains(keyword);
+                }
+                return matchPB && matchSearch;
+            })
+            .collect(Collectors.toList());
+            
+        hienThiDanhSach(ketQua);
+    }
+
+    private void hienThiDanhSach(List<NhanVien> list) {
+        tableModel.setRowCount(0); 
+        for (NhanVien nv : list) {
+            // Lấy tên phòng ban đẹp từ RAM
+            String tenPhongBanDayDu = getTenPhongBan(nv.getPhongBan());
+
+            tableModel.addRow(new Object[]{
+                nv.getMaNhanVien(),
+                nv.getHoTen(),
+                tenPhongBanDayDu, 
+                nv.getEmail(),
+                nv.getSdt(),
+                nv.getNgaySinh(),
+                nv.getThamNien() + " năm"
+            });
         }
     }
 
-    private void lamMoiFormNV() {
-        txtMaNV.setText("");
-        txtTenNV.setText("");
-        if(cmbPhongBanNV.getItemCount() > 0) cmbPhongBanNV.setSelectedIndex(0);
-        txtSdt.setText("");
-        txtEmail.setText("");
-        txtNgaySinh.setText("");
-        txtCccd.setText("");
-        txtThamNien.setText("");
-        txtMaNV.setEditable(true);
-        tableNV.clearSelection();
+    private String getTenPhongBan(String maPB) {
+        if (parent.danhSachPB != null) {
+            for (PhongBan pb : parent.danhSachPB) {
+                if (pb.getMaPhongBan().equalsIgnoreCase(maPB)) {
+                    return pb.getTenPhongBan(); 
+                }
+            }
+        }
+        return maPB;
     }
-    
+
     public void refreshTableNV() {
-        txtTuKhoaTimKiem.setText(""); 
-        xuLyTimKiem();
+        if (parent.danhSachNV != null) {
+            hienThiDanhSach(parent.danhSachNV);
+        }
     }
-    
+
     public void updatePhongBanComboBox() {
-        cmbPhongBanNV.removeAllItems();
-        for (PhongBan pb : danhSachPB) cmbPhongBanNV.addItem(pb);
+        if (cmbPhongBanLoc != null) {
+            ActionListener[] listeners = cmbPhongBanLoc.getActionListeners();
+            for (ActionListener l : listeners) cmbPhongBanLoc.removeActionListener(l);
+
+            cmbPhongBanLoc.removeAllItems();
+            cmbPhongBanLoc.addItem("Tất cả");
+            
+            if (parent.danhSachPB != null) {
+                for (objects.PhongBan pb : parent.danhSachPB) {
+                    cmbPhongBanLoc.addItem(pb.getMaPhongBan() + " - " + pb.getTenPhongBan());
+                }
+            }
+            
+            for (ActionListener l : listeners) cmbPhongBanLoc.addActionListener(l);
+        }
     }
 }
