@@ -110,4 +110,18 @@ public class QuanLyTaiKhoan {
         random.nextBytes(salt);
         return Base64.getEncoder().encodeToString(salt);
     }
+    //kiểm tra nếu là role admin thì trả về true
+    public boolean isAdmin(String username) {
+        String sql = "SELECT role FROM tai_khoan WHERE username = ?";
+        try (Connection conn = DatabaseHandler.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                String role = rs.getString("role");
+                return "admin".equals(role);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return false;
+    }
 }
