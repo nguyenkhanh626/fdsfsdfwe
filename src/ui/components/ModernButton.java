@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 /**
  * ModernButton - Nút bấm phẳng, hiện đại với hiệu ứng Hover.
  */
+
 public class ModernButton extends JButton {
     private Color colorNormal;
     private Color colorHover;
@@ -19,7 +20,7 @@ public class ModernButton extends JButton {
     private boolean isPressed = false;
 
     public ModernButton(String text) {
-        this(text, new Color(59, 130, 246), new Color(37, 99, 235)); // Màu xanh mặc định
+        this(text, new Color(59, 130, 246), new Color(37, 99, 235));
     }
 
     public ModernButton(String text, Color normal, Color hover) {
@@ -32,13 +33,13 @@ public class ModernButton extends JButton {
         setFont(new Font("Segoe UI", Font.BOLD, 14));
         setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Tắt vẽ mặc định của Swing
+        //Tắt vẽ mặc định của Swing
         setContentAreaFilled(false);
         setFocusPainted(false);
         setBorderPainted(false);
         setOpaque(false);
 
-        // Xử lý sự kiện chuột để làm hiệu ứng
+        //Xử lý sự kiện chuột để làm hiệu ứng
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -71,7 +72,7 @@ public class ModernButton extends JButton {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Xác định màu nền dựa trên trạng thái
+        //Xác định màu nền dựa trên trạng thái
         Color paintColor = colorNormal;
         if (isPressed) {
             paintColor = colorPressed;
@@ -79,11 +80,11 @@ public class ModernButton extends JButton {
             paintColor = colorHover;
         }
 
-        // Vẽ nền nút bo góc
+        //Vẽ nền nút bo góc
         g2.setColor(paintColor);
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
 
-        // Vẽ Text ở chính giữa
+        //Vẽ Text ở chính giữa
         FontMetrics fm = g2.getFontMetrics();
         Rectangle stringBounds = fm.getStringBounds(getText(), g2).getBounds();
         int textX = (getWidth() - stringBounds.width) / 2;

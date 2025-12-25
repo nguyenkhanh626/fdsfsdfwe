@@ -7,12 +7,12 @@ import javax.swing.BorderFactory;
 import javax.swing.JTextField;
 
 /**
- * Validator - Bộ công cụ kiểm tra dữ liệu đầu vào chuẩn Enterprise.
+ * Validator - Bộ công cụ kiểm tra dữ liệu đầu vào
  * Giúp đảm bảo dữ liệu sạch trước khi đẩy vào Database.
  */
 public class Validator {
 
-    // Các mẫu Regex (Regular Expression) để kiểm tra định dạng
+    // Các mẫu để kiểm tra định dạng
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^(84|0[3|5|7|8|9])+([0-9]{8})$"); // Đầu số VN
     private static final Pattern CCCD_PATTERN = Pattern.compile("^\\d{12}$"); // Căn cước 12 số
@@ -103,12 +103,12 @@ public class Validator {
         }
 
         if (!valid) {
-            // Nếu sai: Viền đỏ, nền hồng nhạt
+            //sai: Viền đỏ, nền hồng nhạt
             txt.setBorder(BorderFactory.createLineBorder(Color.RED));
             txt.setBackground(new Color(255, 240, 240));
             txt.setToolTipText("Dữ liệu không đúng định dạng!");
         } else {
-            // Nếu đúng: Viền xám, nền trắng
+            //đúng: Viền xám, nền trắng
             txt.setBorder(BorderFactory.createLineBorder(Color.GRAY));
             txt.setBackground(Color.WHITE);
             txt.setToolTipText(null);

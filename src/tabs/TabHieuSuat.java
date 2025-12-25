@@ -8,7 +8,7 @@ import javax.swing.table.JTableHeader;
 import MainApp.*;
 import dataa.*;
 import objects.*;
-import ui.components.*; // Import bộ UI đẹp
+import ui.components.*;
 
 import java.awt.*;
 import java.sql.*;
@@ -21,7 +21,6 @@ public class TabHieuSuat extends JPanel {
     private QuanLyNhanVienGUI parent;
     private List<NhanVien> danhSachNV;
 
-    // Components - Cham Cong
     private JComboBox<String> cmbCaLamViec;
     private JTextField txtMaNVChamCong;
     private DefaultTableModel modelChamCong;
@@ -29,7 +28,6 @@ public class TabHieuSuat extends JPanel {
     private JLabel lblStatusCheckIn;
     private ModernButton btnCheckIn, btnCheckOut, btnRefresh;
 
-    // Components - Nghi Phep
     private JTextField txtMaNVNghi;
     private JTextField txtTuNgay, txtDenNgay;
     private JTextArea txtLyDo;
@@ -37,7 +35,6 @@ public class TabHieuSuat extends JPanel {
     private JTable tableNghiPhep;
     private ModernButton btnGuiDon, btnLoadDon;
 
-    // Components - Vi Pham
     private JTextField txtMaNVViPham;
     private JRadioButton radioDiMuon;
     private JRadioButton radioKhongPhep; 
@@ -51,7 +48,7 @@ public class TabHieuSuat extends JPanel {
         this.danhSachNV = parent.danhSachNV; 
         
         setLayout(new BorderLayout(10, 10));
-        setBackground(new Color(241, 245, 249)); // Nền xám hiện đại
+        setBackground(new Color(241, 245, 249));
         setBorder(new EmptyBorder(10, 10, 10, 10));
         
         JTabbedPane tabSub = new JTabbedPane();
@@ -69,19 +66,16 @@ public class TabHieuSuat extends JPanel {
         add(tabSub, BorderLayout.CENTER);
     }
 
-    // ========================================================================
-    // 1. GIAO DIỆN CHẤM CÔNG (ĐÃ LÀM ĐẸP)
-    // ========================================================================
+    //CHẤM CÔNG
+
     private JPanel createPanelChamCong() {
         JPanel panel = new JPanel(new BorderLayout(15, 15));
         panel.setBackground(new Color(241, 245, 249));
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Input Area
         RoundedPanel inputPanel = new RoundedPanel(15, Color.WHITE);
         inputPanel.setLayout(new GridBagLayout());
         
-        // Tiêu đề section
         JLabel lblTitle = new JLabel("GHI NHẬN CHẤM CÔNG");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblTitle.setForeground(new Color(30, 41, 59));
@@ -90,11 +84,9 @@ public class TabHieuSuat extends JPanel {
         gbc.insets = new Insets(10, 10, 10, 10); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Title Row
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         inputPanel.add(lblTitle, gbc);
 
-        // Row 1: Chọn Ca
         gbc.gridy = 1; gbc.gridwidth = 1;
         inputPanel.add(createLabel("Chọn Ca làm việc:"), gbc);
         gbc.gridx = 1; 
@@ -104,7 +96,6 @@ public class TabHieuSuat extends JPanel {
         loadDanhSachCa();
         inputPanel.add(cmbCaLamViec, gbc);
 
-        // Row 2: Mã NV
         gbc.gridx = 0; gbc.gridy = 2;
         inputPanel.add(createLabel("Mã Nhân viên:"), gbc);
         gbc.gridx = 1; 
@@ -113,7 +104,6 @@ public class TabHieuSuat extends JPanel {
         txtMaNVChamCong.addActionListener(e -> xuLyCheckIn());
         inputPanel.add(txtMaNVChamCong, gbc);
 
-        // Row 3: Buttons
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         btnPanel.setOpaque(false);
         
@@ -130,7 +120,6 @@ public class TabHieuSuat extends JPanel {
         gbc.gridx = 1; gbc.gridy = 3; 
         inputPanel.add(btnPanel, gbc);
 
-        // Row 4: Status
         lblStatusCheckIn = new JLabel("Vui lòng nhập Mã NV để chấm công.");
         lblStatusCheckIn.setFont(new Font("Segoe UI", Font.ITALIC, 13));
         lblStatusCheckIn.setForeground(new Color(37, 99, 235));
@@ -139,13 +128,12 @@ public class TabHieuSuat extends JPanel {
 
         panel.add(inputPanel, BorderLayout.NORTH);
 
-        // Table Area
         String[] cols = {"ID", "Ngày", "Mã NV", "Ca", "Giờ Vào", "Giờ Ra"};
         modelChamCong = new DefaultTableModel(cols, 0) {
              @Override public boolean isCellEditable(int row, int column) { return false; }
         };
         tableChamCong = new JTable(modelChamCong);
-        setupTable(tableChamCong); // Áp dụng style đẹp
+        setupTable(tableChamCong);
         
         JScrollPane scrollPane = new JScrollPane(tableChamCong);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -158,7 +146,7 @@ public class TabHieuSuat extends JPanel {
         
         panel.add(tableContainer, BorderLayout.CENTER);
         
-        // Refresh Button
+        //Refresh Button
         btnRefresh = new ModernButton("Tải lại danh sách hôm nay", new Color(100, 116, 139), new Color(71, 85, 105));
         btnRefresh.setPreferredSize(new Dimension(200, 35));
         btnRefresh.addActionListener(e -> loadBangChamCongHienTai());
@@ -168,7 +156,7 @@ public class TabHieuSuat extends JPanel {
         bottomPanel.add(btnRefresh);
         panel.add(bottomPanel, BorderLayout.SOUTH);
 
-        // Events
+        //Events
         btnCheckIn.addActionListener(e -> xuLyCheckIn());
         btnCheckOut.addActionListener(e -> xuLyCheckOut());
 
@@ -176,15 +164,13 @@ public class TabHieuSuat extends JPanel {
         return panel;
     }
 
-    // ========================================================================
-    // 2. GIAO DIỆN NGHỈ PHÉP (ĐÃ LÀM ĐẸP)
-    // ========================================================================
+    //NGHỈ PHÉP
+
     private JPanel createPanelNghiPhep() {
         JPanel panel = new JPanel(new BorderLayout(15, 15));
         panel.setBackground(new Color(241, 245, 249));
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Form Area
         RoundedPanel formPanel = new RoundedPanel(15, Color.WHITE);
         formPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -198,7 +184,6 @@ public class TabHieuSuat extends JPanel {
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 4;
         formPanel.add(lblTitle, gbc);
 
-        // Row 1
         gbc.gridwidth = 1; gbc.gridy = 1;
         
         gbc.gridx = 0; formPanel.add(createLabel("Mã Nhân viên:"), gbc);
@@ -211,19 +196,17 @@ public class TabHieuSuat extends JPanel {
         txtLyDo.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         formPanel.add(new JScrollPane(txtLyDo), gbc);
         
-        // Row 2
         gbc.gridheight = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridy = 2;
         
         gbc.gridx = 0; formPanel.add(createLabel("Từ ngày (dd/MM/yyyy):"), gbc);
         gbc.gridx = 1; txtTuNgay = new JTextField(); setupTextField(txtTuNgay); formPanel.add(txtTuNgay, gbc);
 
-        // Row 3
         gbc.gridy = 3;
         gbc.gridx = 0; formPanel.add(createLabel("Đến ngày (dd/MM/yyyy):"), gbc);
         gbc.gridx = 1; txtDenNgay = new JTextField(); setupTextField(txtDenNgay); formPanel.add(txtDenNgay, gbc);
         
-        // Button Send
+        //Button Send
         gbc.gridx = 3;
         btnGuiDon = new ModernButton("Gửi Đơn", new Color(37, 99, 235), new Color(29, 78, 216));
         btnGuiDon.setPreferredSize(new Dimension(120, 35));
@@ -232,7 +215,6 @@ public class TabHieuSuat extends JPanel {
         
         panel.add(formPanel, BorderLayout.NORTH);
 
-        // Table Area
         String[] cols = {"ID", "Mã NV", "Từ ngày", "Đến ngày", "Lý do", "Trạng thái"};
         modelNghiPhep = new DefaultTableModel(cols, 0) {
              @Override public boolean isCellEditable(int row, int column) { return false; }
@@ -247,7 +229,6 @@ public class TabHieuSuat extends JPanel {
         
         panel.add(tableContainer, BorderLayout.CENTER);
         
-        // Bottom Panel
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottomPanel.setOpaque(false);
         btnLoadDon = new ModernButton("Làm mới danh sách", new Color(100, 116, 139), new Color(71, 85, 105));
@@ -261,15 +242,14 @@ public class TabHieuSuat extends JPanel {
         return panel;
     }
 
-    // ========================================================================
-    // 3. GIAO DIỆN VI PHẠM (ĐÃ LÀM ĐẸP)
-    // ========================================================================
+
+    //VI PHẠM
+
     private JPanel createPanelViPham() {
         JPanel panel = new JPanel(new BorderLayout(15, 15));
         panel.setBackground(new Color(241, 245, 249));
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Form Area
         RoundedPanel formPanel = new RoundedPanel(15, Color.WHITE);
         formPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -278,7 +258,7 @@ public class TabHieuSuat extends JPanel {
 
         JLabel lblTitle = new JLabel("XỬ LÝ VI PHẠM & KỶ LUẬT");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblTitle.setForeground(new Color(185, 28, 28)); // Màu đỏ
+        lblTitle.setForeground(new Color(185, 28, 28));
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         formPanel.add(lblTitle, gbc);
 
@@ -319,7 +299,6 @@ public class TabHieuSuat extends JPanel {
         
         panel.add(formPanel, BorderLayout.NORTH);
         
-        // Table Area
         String[] columnNames = {"Mã NV", "Họ Tên", "Lỗi vi phạm", "Điểm cộng thêm"};
         modelLichSuViPham = new DefaultTableModel(columnNames, 0) {
              @Override public boolean isCellEditable(int row, int column) { return false; }
@@ -343,9 +322,7 @@ public class TabHieuSuat extends JPanel {
         return panel;
     }
 
-    // ========================================================================
-    // HELPER UI METHODS (Để code gọn hơn)
-    // ========================================================================
+
     private JLabel createLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -377,9 +354,7 @@ public class TabHieuSuat extends JPanel {
         header.setPreferredSize(new Dimension(100, 45));
     }
 
-    // ========================================================================
-    // LOGIC CODE GỐC (GIỮ NGUYÊN 100%)
-    // ========================================================================
+
 
     private void loadDanhSachCa() {
         if(cmbCaLamViec == null) return;

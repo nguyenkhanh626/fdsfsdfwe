@@ -8,7 +8,7 @@ import javax.swing.table.JTableHeader;
 
 import MainApp.QuanLyNhanVienGUI;
 import dataa.DatabaseHandler;
-import ui.components.*; // Sử dụng ModernButton, RoundedPanel
+import ui.components.*;
 
 import java.awt.*;
 import java.sql.*;
@@ -34,32 +34,31 @@ public class TabLuong extends JPanel {
     public TabLuong(QuanLyNhanVienGUI parent) {
         this.parent = parent;
         setLayout(new BorderLayout(15, 15));
-        setBackground(new Color(241, 245, 249)); // Nền xám hiện đại
+        setBackground(new Color(241, 245, 249));
         setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // 1. Đảm bảo có đủ cột trong DB
+        //Đảm bảo có đủ cột trong DB
         ensureColumnsExist();
 
-        // 2. Giao diện
         add(createToolbar(), BorderLayout.NORTH);
         add(createTablePanel(), BorderLayout.CENTER);
         add(createFooterPanel(), BorderLayout.SOUTH);
 
-        // 3. Tải dữ liệu
+        //Tải dữ liệu
         refreshLuongTable();
     }
 
     private void ensureColumnsExist() {
         try (Connection conn = DatabaseHandler.connect();
              Statement stmt = conn.createStatement()) {
-            try { stmt.execute("ALTER TABLE nhan_vien ADD COLUMN luong_co_ban REAL DEFAULT 5000000"); } catch (Exception e) {}
+            try { stmt.execute("ALTER TABLE nhan_vien ADD COLUMN luong_co_ban REAL DEFAULT 2000000"); } catch (Exception e) {}
             try { stmt.execute("ALTER TABLE nhan_vien ADD COLUMN phu_cap REAL DEFAULT 0"); } catch (Exception e) {}
             try { stmt.execute("ALTER TABLE nhan_vien ADD COLUMN diem_vi_pham INTEGER DEFAULT 0"); } catch (Exception e) {}
             try { stmt.execute("ALTER TABLE nhan_vien ADD COLUMN diem_thuong_du_an INTEGER DEFAULT 0"); } catch (Exception e) {}
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    // --- TOOLBAR ---
+    //TOOLBAR
     private JPanel createToolbar() {
         RoundedPanel pnl = new RoundedPanel(15, Color.WHITE);
         pnl.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 20));
@@ -91,9 +90,8 @@ public class TabLuong extends JPanel {
         return pnl;
     }
 
-    // --- TABLE ---
+    //TABLE
     private JPanel createTablePanel() {
-        // Cột: Thêm "Thưởng Dự Án"
         String[] cols = {"Mã NV", "Họ Tên", "Lương CB", "Phụ Cấp", "Thưởng Dự Án (+)", "Phạt (-)", "THỰC LĨNH"};
         
         modelLuong = new DefaultTableModel(cols, 0) {
@@ -103,14 +101,14 @@ public class TabLuong extends JPanel {
         tableLuong = new JTable(modelLuong);
         setupTable(tableLuong);
 
-        // Căn phải cho các cột tiền tệ
+        //Căn phải cho các cột tiền tệ
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
         rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
         for(int i=2; i<=6; i++) {
             tableLuong.getColumnModel().getColumn(i).setCellRenderer(rightRenderer);
         }
 
-        // Tô đậm cột Thực Lĩnh
+        //Tô đậm cột Thực Lĩnh
         tableLuong.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -134,7 +132,7 @@ public class TabLuong extends JPanel {
         return pnl;
     }
 
-    // --- FOOTER ---
+    //FOOTER
     private JPanel createFooterPanel() {
         RoundedPanel pnl = new RoundedPanel(15, Color.WHITE);
         pnl.setLayout(new FlowLayout(FlowLayout.RIGHT, 20, 15));
@@ -142,13 +140,13 @@ public class TabLuong extends JPanel {
 
         lblTongChiPhi = new JLabel("Tổng chi phí lương tháng này: 0 VNĐ");
         lblTongChiPhi.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTongChiPhi.setForeground(new Color(185, 28, 28)); // Màu đỏ
+        lblTongChiPhi.setForeground(new Color(185, 28, 28));
 
         pnl.add(lblTongChiPhi);
         return pnl;
     }
 
-    // --- LOGIC TÍNH TOÁN (ĐÃ ĐỔI TÊN HÀM ĐÚNG YÊU CẦU) ---
+    //LOGIC TÍNH TOÁN
     public void refreshLuongTable() {
         modelLuong.setRowCount(0);
         String keyword = txtTimKiem.getText().trim();
@@ -169,12 +167,13 @@ public class TabLuong extends JPanel {
                 
                 double phuCap = rs.getDouble("phu_cap");
                 int diemPhat = rs.getInt("diem_vi_pham");
-                int diemThuongDA = rs.getInt("diem_thuong_du_an"); // Lấy điểm thưởng dự án
+                int diemThuongDA = rs.getInt("diem_thuong_du_an");
+                int thamnienn=rs.getInt("tham_nien");
 
-                // --- CÔNG THỨC TÍNH MỚI ---
                 double tienPhat = diemPhat * HE_SO_PHAT;
-                double tienThuongDA = diemThuongDA * HE_SO_THUONG_DA; // Nhân 5 triệu
-                
+                double tienThuongDA = diemThuongDA * HE_SO_THUONG_DA;
+                //Tính lương cb bằng cách lấy 2 triệu nhân với (2.5+ thâm niên)
+                luongCB = luongCB * (2.5 + thamnienn);
                 double thucLinh = luongCB + phuCap + tienThuongDA - tienPhat;
                 if (thucLinh < 0) thucLinh = 0;
 
@@ -185,7 +184,7 @@ public class TabLuong extends JPanel {
                     hoTen,
                     df.format(luongCB),
                     df.format(phuCap),
-                    df.format(tienThuongDA), // Hiển thị tiền thưởng dự án
+                    df.format(tienThuongDA),
                     df.format(tienPhat),
                     df.format(thucLinh)
                 });
@@ -198,7 +197,6 @@ public class TabLuong extends JPanel {
         }
     }
 
-    // --- HELPER UI ---
     private void setupTextField(JTextField txt) {
         txt.setPreferredSize(new Dimension(200, 35));
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));

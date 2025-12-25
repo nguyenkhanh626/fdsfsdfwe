@@ -33,12 +33,12 @@ public class TabPhongBan extends JPanel {
         setBackground(new Color(241, 245, 249)); 
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // --- 1. TOOLBAR ---
+        //TOOLBAR
         RoundedPanel pnlToolbar = new RoundedPanel(15, Color.WHITE);
         pnlToolbar.setPreferredSize(new Dimension(1000, 80));
         pnlToolbar.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 20));
 
-        // Ô tìm kiếm
+        //Ô tìm kiếm
         pnlToolbar.add(new JLabel("Tìm kiếm:"));
         txtTimKiem = new JTextField(20);
         txtTimKiem.setPreferredSize(new Dimension(250, 35));
@@ -54,7 +54,7 @@ public class TabPhongBan extends JPanel {
 
         pnlToolbar.add(Box.createHorizontalStrut(30));
 
-        // Nút chức năng
+        //Nút chức năng
         btnThem = new ModernButton("+ Thêm PB", new Color(22, 163, 74), new Color(21, 128, 61));
         btnThem.setPreferredSize(new Dimension(120, 35));
         
@@ -74,10 +74,10 @@ public class TabPhongBan extends JPanel {
 
         add(pnlToolbar, BorderLayout.NORTH);
 
-        // --- 2. BẢNG DỮ LIỆU ---
+        //BẢNG DỮ LIỆU
         String[] columns = {"Mã Phòng Ban", "Tên Phòng Ban", "Số Lượng Nhân Sự"};
         
-        // Chặn sửa trực tiếp
+        //Chặn sửa trực tiếp
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -87,7 +87,6 @@ public class TabPhongBan extends JPanel {
         
         tablePB = new JTable(tableModel);
         
-        // Style bảng
         tablePB.setRowHeight(35);
         tablePB.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         tablePB.setSelectionBackground(new Color(219, 234, 254));
@@ -112,15 +111,15 @@ public class TabPhongBan extends JPanel {
 
         add(tableContainer, BorderLayout.CENTER);
 
-        // --- 3. XỬ LÝ SỰ KIỆN ---
+        //XỬ LÝ SỰ KIỆN
         setupActions();
         
-        // Load dữ liệu
+        //Load dữ liệu
         refreshTablePB();
     }
 
     private void setupActions() {
-        // Tìm kiếm
+        //Tìm kiếm
         ActionListener searchAction = e -> {
             String keyword = txtTimKiem.getText().trim().toLowerCase();
             if (keyword.isEmpty()) {
@@ -136,7 +135,7 @@ public class TabPhongBan extends JPanel {
         btnTimKiem.addActionListener(searchAction);
         txtTimKiem.addActionListener(searchAction);
 
-        // Thêm mới
+        //Thêm mới
         btnThem.addActionListener(e -> {
             DialogThemPhongBan dialog = new DialogThemPhongBan(parent, null);
             dialog.setVisible(true);
@@ -163,7 +162,7 @@ public class TabPhongBan extends JPanel {
                     Toast.show("Đã thêm phòng ban: " + tenMoi);
                     parent.ghiNhatKy("Thêm Phòng Ban", "Mã: " + maMoi);
                     
-                    // Đồng bộ tất cả các tab (Để TabNhanVien thấy PB mới)
+                    //Đồng bộ tất cả các tab (Để TabNhanVien thấy PB mới)
                     parent.refreshAllTabs();
                     refreshTablePB();
                     
@@ -174,7 +173,7 @@ public class TabPhongBan extends JPanel {
             }
         });
 
-        // Sửa Tên
+        //Sửa Tên
         btnSua.addActionListener(e -> {
             int row = tablePB.getSelectedRow();
             if (row < 0) {
@@ -208,7 +207,7 @@ public class TabPhongBan extends JPanel {
                     Toast.show("Cập nhật thành công!");
                     parent.ghiNhatKy("Sửa Phòng Ban", "Mã: " + maPB + " -> Tên mới: " + tenMoi);
                     
-                    parent.refreshAllTabs(); // Đồng bộ
+                    parent.refreshAllTabs(); //Đồng bộ
                     refreshTablePB();
                     
                 } catch (Exception ex) {
@@ -217,7 +216,7 @@ public class TabPhongBan extends JPanel {
             }
         });
 
-        // Xóa
+        //Xóa
         btnXoa.addActionListener(e -> {
             int row = tablePB.getSelectedRow();
             if (row < 0) {
@@ -226,7 +225,7 @@ public class TabPhongBan extends JPanel {
             }
             String maPB = (String) tableModel.getValueAt(row, 0);
             
-            // Lấy số lượng từ bảng
+            //Lấy số lượng từ bảng
             Object val = tableModel.getValueAt(row, 2);
             int soLuongNV = (val instanceof Integer) ? (int)val : Integer.parseInt(val.toString());
 
@@ -253,7 +252,7 @@ public class TabPhongBan extends JPanel {
                     Toast.show("Đã xóa phòng ban!");
                     parent.ghiNhatKy("Xóa Phòng Ban", "Mã: " + maPB);
                     
-                    parent.refreshAllTabs(); // Đồng bộ
+                    parent.refreshAllTabs(); //Đồng bộ
                     refreshTablePB();
                     
                 } catch (Exception ex) {
@@ -262,7 +261,7 @@ public class TabPhongBan extends JPanel {
             }
         });
 
-        // Refresh
+        //Refresh
         btnRefresh.addActionListener(e -> {
             txtTimKiem.setText("");
             refreshTablePB();
@@ -271,13 +270,13 @@ public class TabPhongBan extends JPanel {
     }
 
     /**
-     * HÀM ĐẾM THÔNG MINH (SMART COUNT)
+     * HÀM ĐẾM SỐ LƯỢNG NHÂN VIÊN THEO PHÒNG BAN
      * Đếm cả khi nhân viên lưu Mã (KT) và khi nhân viên lưu Tên (Kỹ thuật)
      */
     private void hienThiDanhSach(List<PhongBan> list) {
         tableModel.setRowCount(0);
         
-        // Lấy danh sách nhân viên từ RAM (đã được load đầy đủ)
+        //Lấy danh sách nhân viên từ RAM (đã được load đầy đủ)
         List<NhanVien> listNV = parent.danhSachNV;
         if (listNV == null) listNV = new ArrayList<>();
 
@@ -285,10 +284,10 @@ public class TabPhongBan extends JPanel {
             String maPB = pb.getMaPhongBan().trim().toLowerCase();
             String tenPB = pb.getTenPhongBan().trim().toLowerCase();
 
-            // Stream API để đếm
+            
             long count = listNV.stream().filter(nv -> {
                 String pbCuaNV = nv.getPhongBan().trim().toLowerCase();
-                // Logic: Nhân viên thuộc phòng này nếu chuỗi lưu trữ trùng Mã hoặc trùng Tên
+                //Nhân viên thuộc phòng này nếu chuỗi lưu trữ trùng Mã hoặc trùng Tên
                 return pbCuaNV.equals(maPB) || pbCuaNV.equals(tenPB) || pbCuaNV.contains(tenPB);
             }).count();
 
@@ -306,9 +305,9 @@ public class TabPhongBan extends JPanel {
         }
     }
     
-    // Delegate methods cho Parent gọi
+    //Delegate methods cho Parent gọi
     public void updatePhongBanComboBox() {
-        // Chỉ để tương thích, không cần code ở đây
+        
         refreshTablePB();
     }
     public void locNhanVienTheoPhongBan() {}

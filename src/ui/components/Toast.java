@@ -25,9 +25,9 @@ public class Toast extends JWindow {
         setAlwaysOnTop(true);
         setSize(350, 60);
         setLayout(null);
-        setBackground(new Color(0, 0, 0, 0)); // Nền trong suốt hoàn toàn
+        setBackground(new Color(0, 0, 0, 0)); //Nền trong suốt
 
-        // Tính toán vị trí (Góc phải dưới màn hình)
+        //Tính toán vị trí (Góc phải dưới màn hình)
         Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();
         Insets toolHeight = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
         
@@ -44,24 +44,22 @@ public class Toast extends JWindow {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
-        // 1. Vẽ nền chính (Background)
         if (success) {
-            g2.setColor(new Color(220, 252, 231)); // Xanh lá nhạt (Success)
+            g2.setColor(new Color(220, 252, 231));
         } else {
-            g2.setColor(new Color(254, 226, 226)); // Đỏ nhạt (Error)
+            g2.setColor(new Color(254, 226, 226));
         }
         g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 15, 15));
 
-        // 2. Vẽ dải màu chỉ thị bên trái (Indicator)
         if (success) {
-            g2.setColor(new Color(22, 163, 74)); // Xanh đậm
+            g2.setColor(new Color(22, 163, 74));
         } else {
-            g2.setColor(new Color(220, 38, 38)); // Đỏ đậm
+            g2.setColor(new Color(220, 38, 38));
         }
         g2.fill(new RoundRectangle2D.Double(0, 0, 10, getHeight(), 15, 15));
-        g2.fillRect(5, 0, 10, getHeight()); // Che góc bo tròn bên trong để nối liền
+        g2.fillRect(5, 0, 10, getHeight());
 
-        // 3. Vẽ Icon (Vẽ thủ công bằng Graphics2D)
+        //Vẽ Icon
         int iconX = 25;
         int iconY = 18;
         
@@ -70,19 +68,18 @@ public class Toast extends JWindow {
             g2.fillOval(iconX, iconY, 24, 24);
             g2.setColor(Color.WHITE);
             g2.setStroke(new BasicStroke(2.5f));
-            g2.drawLine(iconX + 6, iconY + 12, iconX + 10, iconY + 16); // Dấu check
+            g2.drawLine(iconX + 6, iconY + 12, iconX + 10, iconY + 16);
             g2.drawLine(iconX + 10, iconY + 16, iconX + 18, iconY + 8);
         } else {
             g2.setColor(new Color(220, 38, 38));
             g2.fillOval(iconX, iconY, 24, 24);
             g2.setColor(Color.WHITE);
             g2.setStroke(new BasicStroke(2.5f));
-            g2.drawLine(iconX + 7, iconY + 7, iconX + 17, iconY + 17); // Dấu X
+            g2.drawLine(iconX + 7, iconY + 7, iconX + 17, iconY + 17);
             g2.drawLine(iconX + 17, iconY + 7, iconX + 7, iconY + 17);
         }
 
-        // 4. Vẽ Text thông báo
-        g2.setColor(new Color(30, 41, 59)); // Màu chữ đen xám
+        g2.setColor(new Color(30, 41, 59));
         g2.setFont(new Font("Segoe UI", Font.BOLD, 14));
         g2.drawString(success ? "Thành công" : "Thất bại", 60, 23);
 
@@ -105,7 +102,7 @@ public class Toast extends JWindow {
                 long elapsed = System.currentTimeMillis() - startTime;
 
                 if (isFadingIn) {
-                    // Giai đoạn hiện lên (Fade In)
+                    //Giai đoạn hiện lên (Fade In)
                     opacity += 0.05f;
                     if (opacity >= 1.0f) {
                         opacity = 1.0f;
@@ -114,21 +111,20 @@ public class Toast extends JWindow {
                         startTime = System.currentTimeMillis(); 
                     }
                 } else if (isWaiting) {
-                    // Giai đoạn chờ đọc tin (Wait 2.5s)
+                    //Giai đoạn chờ đọc tin (2.5s)
                     if (elapsed > 2500) {
                         isWaiting = false;
                         startTime = System.currentTimeMillis();
                     }
                 } else {
-                    // Giai đoạn ẩn đi (Fade Out)
+                    //Giai đoạn ẩn đi (Fade Out)
                     opacity -= 0.05f;
                     if (opacity <= 0.0f) {
                         timer.stop();
-                        dispose(); // Hủy cửa sổ
+                        dispose(); //Hủy cửa sổ
                     }
                 }
                 
-                // Hiệu ứng trồi sụt nhẹ
                 if (isFadingIn && opacity < 1.0f) {
                     setLocation(getX(), yLocation - (int)(opacity * 15));
                 }
@@ -140,7 +136,6 @@ public class Toast extends JWindow {
         timer.start();
     }
     
-    // --- Các phương thức Static để gọi nhanh ---
     
     public static void show(String msg) {
         new Toast(msg, true);

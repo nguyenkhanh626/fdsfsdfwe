@@ -34,7 +34,6 @@ public class TabNhanVien extends JPanel {
         setBackground(new Color(241, 245, 249)); 
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // --- 1. TOOLBAR ---
         RoundedPanel pnlToolbar = new RoundedPanel(15, Color.WHITE);
         pnlToolbar.setPreferredSize(new Dimension(1000, 80));
         pnlToolbar.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 20));
@@ -79,7 +78,7 @@ public class TabNhanVien extends JPanel {
 
         add(pnlToolbar, BorderLayout.NORTH);
 
-        // --- 2. BẢNG DỮ LIỆU ---
+        //BẢNG DỮ LIỆU
         String[] columnNames = {"Mã NV", "Họ Tên", "Phòng Ban", "Email", "SĐT", "Ngày Sinh", "Thâm Niên"};
         
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -114,7 +113,7 @@ public class TabNhanVien extends JPanel {
 
         add(tableContainer, BorderLayout.CENTER);
 
-        // --- 3. XỬ LÝ SỰ KIỆN ---
+        //XỬ LÝ SỰ KIỆN
         setupActions();
         refreshTableNV(); 
     }
@@ -124,7 +123,7 @@ public class TabNhanVien extends JPanel {
         btnTimKiem.addActionListener(e -> applyFilters());
         txtTimKiem.addActionListener(e -> applyFilters());
 
-        // --- CHỨC NĂNG THÊM ---
+        //CHỨC NĂNG THÊM
         btnThem.addActionListener(e -> {
             DialogThemNhanVien dialog = new DialogThemNhanVien(parent, null);
             dialog.setVisible(true);
@@ -151,18 +150,16 @@ public class TabNhanVien extends JPanel {
                     pstmt.setInt(8, 0); 
                     pstmt.executeUpdate();
                     
-                    // Update RAM
                     NhanVien nvMoi = new NhanVien(maNV, hoTen, phongBan, sdt, email, ngaySinh, cccd, 0);
                     parent.danhSachNV.add(nvMoi);
                     
                     Toast.show("Đã thêm: " + hoTen);
                     parent.ghiNhatKy("Thêm nhân viên", "Tạo mới NV: " + maNV);
                     
-                    // Reset UI
                     cmbPhongBanLoc.setSelectedIndex(0); 
                     txtTimKiem.setText("");
                     
-                    // QUAN TRỌNG: Cập nhật toàn bộ hệ thống (Dashboard, PhongBan Count)
+                    //Cập nhật toàn bộ hệ thống (Dashboard, PhongBan Count)
                     parent.refreshAllTabs(); 
 
                 } catch (Exception ex) {
@@ -172,7 +169,7 @@ public class TabNhanVien extends JPanel {
             }
         });
 
-        // --- CHỨC NĂNG SỬA ---
+        //CHỨC NĂNG SỬA
         btnSua.addActionListener(e -> {
             int selectedRow = tableNV.getSelectedRow();
             if (selectedRow < 0) {
@@ -182,7 +179,6 @@ public class TabNhanVien extends JPanel {
             
             String maNV = (String) tableModel.getValueAt(selectedRow, 0);
             
-            // Tìm nhân viên trong RAM
             NhanVien nvCanSua = parent.danhSachNV.stream()
                 .filter(nv -> nv.getMaNhanVien().equals(maNV))
                 .findFirst().orElse(null);
@@ -213,7 +209,6 @@ public class TabNhanVien extends JPanel {
                     pstmt.setString(7, maNV);
                     pstmt.executeUpdate();
                     
-                    // Update RAM
                     nvCanSua.setHoTen(hoTenMoi);
                     nvCanSua.setPhongBan(pbMoi);
                     nvCanSua.setSdt(sdtMoi);
@@ -224,7 +219,7 @@ public class TabNhanVien extends JPanel {
                     Toast.show("Cập nhật thành công!");
                     parent.ghiNhatKy("Sửa nhân viên", "Cập nhật NV: " + maNV);
                     
-                    // QUAN TRỌNG: Đồng bộ lại Dashboard và các tab khác
+                    //Đồng bộ lại Dashboard và các tab khác
                     parent.refreshAllTabs();
                     
                 } catch (Exception ex) {
@@ -234,7 +229,7 @@ public class TabNhanVien extends JPanel {
             }
         });
 
-        // --- CHỨC NĂNG XÓA ---
+        //CHỨC NĂNG XÓA
         btnXoa.addActionListener(e -> {
             int selectedRow = tableNV.getSelectedRow();
             if (selectedRow >= 0) {
@@ -254,7 +249,7 @@ public class TabNhanVien extends JPanel {
                         
                         Toast.show("Đã xóa thành công!");
                         
-                        // QUAN TRỌNG: Đồng bộ lại toàn bộ
+                        //Đồng bộ lại toàn bộ
                         parent.refreshAllTabs();
                         
                     } catch (Exception ex) {
@@ -266,11 +261,10 @@ public class TabNhanVien extends JPanel {
             }
         });
 
-        // REFRESH
         btnRefresh.addActionListener(e -> {
             txtTimKiem.setText("");
             cmbPhongBanLoc.setSelectedIndex(0);
-            parent.refreshAllTabs(); // Refresh toàn bộ hệ thống
+            parent.refreshAllTabs(); //Refresh toàn bộ hệ thống
             Toast.show("Đã làm mới dữ liệu!");
         });
     }
@@ -322,7 +316,6 @@ public class TabNhanVien extends JPanel {
     private void hienThiDanhSach(List<NhanVien> list) {
         tableModel.setRowCount(0); 
         for (NhanVien nv : list) {
-            // Lấy tên phòng ban đẹp từ RAM
             String tenPhongBanDayDu = getTenPhongBan(nv.getPhongBan());
 
             tableModel.addRow(new Object[]{

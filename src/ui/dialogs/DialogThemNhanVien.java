@@ -14,27 +14,25 @@ public class DialogThemNhanVien extends JDialog {
 
     private boolean isConfirmed = false;
     private QuanLyNhanVienGUI parent;
-    private NhanVien nvEdit; // Biến lưu nhân viên đang sửa (nếu có)
+    private NhanVien nvEdit;
     
-    // UI Components
     private JTextField txtHoTen, txtEmail, txtSDT, txtCCCD, txtNgaySinh, txtLuong;
     private JComboBox<String> cmbPhongBan, cmbGioiTinh;
     private JTextArea txtDiaChi;
     private ModernButton btnSave, btnCancel, btnUploadAnh;
     private JLabel lblAvatar, lblTitle;
 
-    // Constructor nhận vào NhanVien (Nếu nvToEdit = null thì là THÊM, ngược lại là SỬA)
     public DialogThemNhanVien(QuanLyNhanVienGUI parent, NhanVien nvToEdit) {
         super(parent, nvToEdit == null ? "Thêm Nhân viên" : "Cập nhật Nhân viên", true);
         this.parent = parent;
-        this.nvEdit = nvToEdit; // Lưu lại để biết đang sửa ai
+        this.nvEdit = nvToEdit; //Lưu lại để biết đang sửa ai
         
         setSize(750, 600);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout());
         getContentPane().setBackground(Color.WHITE);
 
-        // Header
+        //Header
         RoundedPanel pnlHeader = new RoundedPanel(0, new Color(241, 245, 249));
         pnlHeader.setPreferredSize(new Dimension(750, 70));
         pnlHeader.setLayout(new FlowLayout(FlowLayout.LEFT, 25, 20));
@@ -45,7 +43,7 @@ public class DialogThemNhanVien extends JDialog {
         pnlHeader.add(lblTitle);
         add(pnlHeader, BorderLayout.NORTH);
 
-        // Body
+        //Body
         JPanel pnlBody = new JPanel(new GridBagLayout());
         pnlBody.setBackground(Color.WHITE);
         pnlBody.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -54,7 +52,7 @@ public class DialogThemNhanVien extends JDialog {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Cột Trái: Avatar
+        //Cột Trái: Avatar
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridheight = 5; gbc.anchor = GridBagConstraints.NORTH;
         
         RoundedPanel pnlAvatarContainer = new RoundedPanel(15, new Color(226, 232, 240));
@@ -68,13 +66,13 @@ public class DialogThemNhanVien extends JDialog {
         
         pnlBody.add(pnlAvatarContainer, gbc);
 
-        // Nút Upload
+        //Nút Upload
         gbc.gridy = 5; gbc.gridheight = 1;
         btnUploadAnh = new ModernButton("Tải ảnh lên", new Color(100, 116, 139), new Color(71, 85, 105));
         btnUploadAnh.setPreferredSize(new Dimension(160, 35));
         pnlBody.add(btnUploadAnh, gbc);
 
-        // Cột Phải: Thông tin
+        //Cột Phải: Thông tin
         gbc.gridheight = 1; gbc.weightx = 1.0; 
         
         gbc.gridx = 1; gbc.gridy = 0;
@@ -120,7 +118,7 @@ public class DialogThemNhanVien extends JDialog {
         
         cmbPhongBan = new JComboBox<>();
         cmbPhongBan.setBackground(Color.WHITE);
-        loadPhongBanData(); // Load PB
+        loadPhongBanData(); //Load PB
         
         txtLuong = new JTextField("10000000"); setupTextField(txtLuong);
         pnlRow4.add(cmbPhongBan);
@@ -140,7 +138,7 @@ public class DialogThemNhanVien extends JDialog {
 
         add(pnlBody, BorderLayout.CENTER);
 
-        // Footer
+        //Footer
         JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 15));
         pnlFooter.setBackground(new Color(241, 245, 249));
         pnlFooter.setPreferredSize(new Dimension(750, 70));
@@ -155,7 +153,7 @@ public class DialogThemNhanVien extends JDialog {
         pnlFooter.add(btnSave);
         add(pnlFooter, BorderLayout.SOUTH);
 
-        // Events
+        //Events
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(new ActionListener() {
             @Override
@@ -168,7 +166,7 @@ public class DialogThemNhanVien extends JDialog {
         });
         btnUploadAnh.addActionListener(e -> Toast.show("Tính năng chọn ảnh đang phát triển!"));
 
-        // NẾU LÀ CHẾ ĐỘ SỬA: ĐIỀN DỮ LIỆU CŨ VÀO FORM
+        //NẾU LÀ CHẾ ĐỘ SỬA: ĐIỀN DỮ LIỆU CŨ VÀO FORM
         if (nvEdit != null) {
             fillDataForEditing();
         }
@@ -181,8 +179,8 @@ public class DialogThemNhanVien extends JDialog {
         txtCCCD.setText(nvEdit.getCccd());
         txtNgaySinh.setText(nvEdit.getNgaySinh());
         
-        // Chọn đúng phòng ban trong ComboBox
-        // Logic: Duyệt qua từng item, nếu item chứa mã PB của nhân viên thì chọn
+        //Chọn đúng phòng ban trong ComboBox
+        //Duyệt qua từng item, nếu item chứa mã PB của nhân viên thì chọn
         String maPBNV = nvEdit.getPhongBan().trim().toLowerCase();
         for (int i = 0; i < cmbPhongBan.getItemCount(); i++) {
             String item = cmbPhongBan.getItemAt(i).toLowerCase();
@@ -241,7 +239,7 @@ public class DialogThemNhanVien extends JDialog {
         return pass;
     }
     
-    // Getters
+    //Getters
     public boolean isConfirmed() { return isConfirmed; }
     public String getHoTen() { return txtHoTen.getText().trim(); }
     public String getEmail() { return txtEmail.getText().trim(); }
@@ -252,7 +250,7 @@ public class DialogThemNhanVien extends JDialog {
     public String getPhongBan() { 
         String selected = (String) cmbPhongBan.getSelectedItem();
         if (selected != null && selected.contains("-")) {
-            return selected.split("-")[0].trim(); // Chỉ lấy MÃ (VD: KT)
+            return selected.split("-")[0].trim(); //Chỉ lấy MÃ (VD: KT)
         }
         return "NS"; 
     }

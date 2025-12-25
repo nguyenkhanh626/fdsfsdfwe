@@ -15,23 +15,22 @@ import java.util.Locale;
 import dataa.*;
 import objects.*;
 import tabs.*;
-import ui.components.*; // Import gói giao diện mới (RoundedPanel, ModernButton)
+import ui.components.*;
 
 public class QuanLyNhanVienGUI extends JFrame {
 
-    // --- DỮ LIỆU HỆ THỐNG ---
+    
     public List<NhanVien> danhSachNV;
     public List<PhongBan> danhSachPB;
     public List<DuAn> danhSachDuAn;
     private List<LogEntry> danhSachLog;
 
-    // --- UI COMPONENTS MỚI (SIDEBAR LAYOUT) ---
-    private JPanel mainContainer;      // Panel chứa toàn bộ giao diện
-    private JPanel sidebarPanel;       // Menu bên trái
-    private JPanel contentPanel;       // Nội dung bên phải (CardLayout)
-    private CardLayout cardLayout;     // Layout để chuyển tab
 
-    // --- CÁC TAB CHỨC NĂNG ---
+    private JPanel mainContainer;
+    private JPanel sidebarPanel;
+    private JPanel contentPanel;
+    private CardLayout cardLayout;
+
     private TabDashboard tabDashboard; 
     private TabNhanVien tabNhanVien;
     private TabPhongBan tabPhongBan;
@@ -47,7 +46,6 @@ public class QuanLyNhanVienGUI extends JFrame {
     private TabHeThong tabHeThong;
     private TabEmail tabEmail; 
 
-    // --- BIẾN HỆ THỐNG & TIỆN ÍCH ---
     public NumberFormat currencyFormatter;
     private QuanLyTaiKhoan quanLyTaiKhoan; 
     private String currentUser = ""; 
@@ -56,7 +54,7 @@ public class QuanLyNhanVienGUI extends JFrame {
     private long startSessionTime;   
 
     public QuanLyNhanVienGUI() {
-        // 1. KHỞI TẠO DATABASE VÀ DỮ LIỆU NỀN
+        //KHỞI TẠO DATABASE VÀ DỮ LIỆU NỀN
         DatabaseHandler.createNewDatabase();
         
         danhSachNV = new ArrayList<>();
@@ -67,24 +65,20 @@ public class QuanLyNhanVienGUI extends JFrame {
         currencyFormatter = NumberFormat.getCurrencyInstance(Locale.of("vi", "VN"));
         quanLyTaiKhoan = new QuanLyTaiKhoan();
         
-        // Load dữ liệu từ SQL lên RAM
+        //Load dữ liệu từ SQL lên RAM
         loadDataFromDB();
         
         ghiNhatKy("Khởi động", "Ứng dụng đã được bật lên");
 
-        // 2. THIẾT LẬP CỬA SỔ CHÍNH (JFRAME)
         setTitle("Hệ thống Quản trị Doanh nghiệp Tổng thể (ERP) - Enterprise Edition");
         setSize(1450, 850); 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); 
         
-        // 3. KHỞI TẠO LAYOUT HIỆN ĐẠI (SIDEBAR)
         initModernLayout();
 
-        // 4. KHỞI TẠO CÁC MÀN HÌNH CON
         initScreens();
         
-        // Mặc định hiển thị dashboard
         cardLayout.show(contentPanel, "DASHBOARD");
     }
     
@@ -95,14 +89,13 @@ public class QuanLyNhanVienGUI extends JFrame {
         mainContainer = new JPanel(new BorderLayout());
         setContentPane(mainContainer);
 
-        // --- A. SIDEBAR (MENU TRÁI) ---
+        //(MENU TRÁI)
         sidebarPanel = new JPanel();
         sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
-        sidebarPanel.setBackground(new Color(30, 41, 59)); // Màu xanh đen (Dark Slate)
+        sidebarPanel.setBackground(new Color(30, 41, 59));
         sidebarPanel.setPreferredSize(new Dimension(260, getHeight()));
         sidebarPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
 
-        // Logo Area
         JLabel lblLogo = new JLabel("ERP SYSTEM");
         lblLogo.setForeground(Color.WHITE);
         lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 28));
@@ -117,17 +110,17 @@ public class QuanLyNhanVienGUI extends JFrame {
         sidebarPanel.add(lblSubLogo);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 30)));
 
-        // --- B. CONTENT PANEL (NỘI DUNG PHẢI) ---
+        //CONTENT PANEL (NỘI DUNG PHẢI)
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
-        contentPanel.setBackground(new Color(241, 245, 249)); // Màu nền xám nhạt
+        contentPanel.setBackground(new Color(241, 245, 249));
 
         mainContainer.add(sidebarPanel, BorderLayout.WEST);
         mainContainer.add(contentPanel, BorderLayout.CENTER);
     }
 
     private void initScreens() {
-        // Khởi tạo tất cả các tab (giữ nguyên logic cũ nhưng không add vào JTabbedPane)
+
         tabDashboard = new TabDashboard(this); 
         tabNhanVien = new TabNhanVien(this);
         tabPhongBan = new TabPhongBan(this);
@@ -143,7 +136,7 @@ public class QuanLyNhanVienGUI extends JFrame {
         tabHeThong = new TabHeThong(this);
         tabEmail = new TabEmail(this);
 
-        // Đưa vào CardLayout với định danh (ID)
+
         contentPanel.add(tabDashboard, "DASHBOARD");
         contentPanel.add(tabNhanVien, "NHAN_VIEN");
         contentPanel.add(tabPhongBan, "PHONG_BAN");
@@ -160,9 +153,7 @@ public class QuanLyNhanVienGUI extends JFrame {
         contentPanel.add(tabEmail, "EMAIL");
     }
 
-    /**
-     * Hàm thêm nút vào Sidebar (Sử dụng ModernButton)
-     */
+
     private void addSidebarButton(String text, String screenId) {
         ModernButton btn = new ModernButton(text, new Color(30, 41, 59), new Color(51, 65, 85));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
@@ -171,11 +162,11 @@ public class QuanLyNhanVienGUI extends JFrame {
         
         btn.addActionListener(e -> {
             cardLayout.show(contentPanel, screenId);
-            refreshAllTabs(); // Refresh dữ liệu mỗi khi chuyển tab
+            refreshAllTabs(); //Refresh dữ liệu mỗi khi chuyển tab
         });
         
         sidebarPanel.add(btn);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 8))); // Khoảng cách
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 8)));
     }
     
     /**
@@ -198,23 +189,21 @@ public class QuanLyNhanVienGUI extends JFrame {
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 5)));
     }
     
-    // --- CÁC HÀM XỬ LÝ LOGIC NGHIỆP VỤ ---
+    //XỬ LÝ LOGIC NGHIỆP VỤ
 
     public String getCurrentUser() {
         return currentUser;
     }
 
     private void setupTabsByRole(String role) {
-        // Xóa các nút cũ trên sidebar (trừ Logo và SubLogo ở đầu)
-        // Logo chiếm index 0, spacer 1, Sublogo 2, spacer 3 => Xóa từ 4
+
         while(sidebarPanel.getComponentCount() > 4) {
             sidebarPanel.remove(4);
         }
 
-        // 1. DASHBOARD (Chung cho mọi role)
         addSidebarButton("  Tổng quan (Dashboard)", "DASHBOARD");
 
-        // 2. PHÂN QUYỀN MENU
+        //PHÂN QUYỀN MENU
         if (role.equals("admin")) {
             addSidebarDivider("Quản trị Nhân sự");
             addSidebarButton("  Hồ sơ Nhân viên", "NHAN_VIEN");
@@ -236,7 +225,7 @@ public class QuanLyNhanVienGUI extends JFrame {
             addSidebarButton("  Gửi Email Nội bộ", "EMAIL");
             addSidebarButton("  Cấu hình & Bảo mật", "HE_THONG");
             
-            // Nút đặc biệt: Tạo tài khoản (mở Dialog chứ không chuyển Tab)
+            //Tạo tài khoản
             ModernButton btnCreateAcc = new ModernButton("  + Tạo Tài khoản mới", new Color(22, 163, 74), new Color(21, 128, 61));
             btnCreateAcc.setHorizontalAlignment(SwingConstants.LEFT);
             btnCreateAcc.setMaximumSize(new Dimension(240, 45));
@@ -269,15 +258,14 @@ public class QuanLyNhanVienGUI extends JFrame {
             addSidebarButton("  Đổi mật khẩu", "HE_THONG");
         }
         else {
-            // User thường
             addSidebarDivider("Cá nhân");
             addSidebarButton("  Lịch làm việc", "LICH_LAM_VIEC");
-            addSidebarButton("  Hồ sơ của tôi", "NHAN_VIEN"); // Cần custom lại để chỉ xem được mình
+            //addSidebarButton("  Hồ sơ của tôi", "NHAN_VIEN");
             addSidebarButton("  Đổi mật khẩu", "HE_THONG");
         }
         
-        // Nút Đăng xuất (Luôn ở cuối cùng)
-        sidebarPanel.add(Box.createVerticalGlue()); // Đẩy xuống đáy
+        //Nút Đăng xuất
+        sidebarPanel.add(Box.createVerticalGlue());
         ModernButton btnLogout = new ModernButton("Đăng xuất", new Color(185, 28, 28), new Color(153, 27, 27));
         btnLogout.setMaximumSize(new Dimension(240, 45));
         btnLogout.addActionListener(e -> xuLyDangXuat());
@@ -292,7 +280,6 @@ public class QuanLyNhanVienGUI extends JFrame {
         try (Connection conn = DatabaseHandler.connect();
              Statement stmt = conn.createStatement()) {
             
-            //Load Phòng ban
             ResultSet rsCheckPB = stmt.executeQuery("SELECT COUNT(*) FROM phong_ban");
             rsCheckPB.next();
             if (rsCheckPB.getInt(1) == 0) {
@@ -307,7 +294,6 @@ public class QuanLyNhanVienGUI extends JFrame {
             }
             rsPB.close();
 
-            //Load Dự án
             ResultSet rsCheckDA = stmt.executeQuery("SELECT COUNT(*) FROM du_an");
             rsCheckDA.next();
             if (rsCheckDA.getInt(1) == 0) {
@@ -319,7 +305,6 @@ public class QuanLyNhanVienGUI extends JFrame {
                 danhSachDuAn.add(new DuAn(rsDA.getString("ma_da"), rsDA.getString("ten_da"), rsDA.getInt("do_phuc_tap")));
             }
 
-            //Load Nhân viên
             ResultSet rsCheckNV = stmt.executeQuery("SELECT COUNT(*) FROM nhan_vien");
             rsCheckNV.next();
             int soLuongNV = rsCheckNV.getInt(1);
@@ -344,7 +329,6 @@ public class QuanLyNhanVienGUI extends JFrame {
                 danhSachNV.add(nv);
             }
 
-            //Load Phân công Dự án
             ResultSet rsPC = stmt.executeQuery("SELECT * FROM phan_cong");
             while (rsPC.next()) {
                 String maDA = rsPC.getString("ma_da");
@@ -365,7 +349,6 @@ public class QuanLyNhanVienGUI extends JFrame {
                 }
             }
 
-            //Load Nhật ký (Log)
             ResultSet rsLog = stmt.executeQuery("SELECT * FROM nhat_ky ORDER BY id DESC LIMIT 50");
             while (rsLog.next()) {
                  danhSachLog.add(new LogEntry(
@@ -404,7 +387,6 @@ public class QuanLyNhanVienGUI extends JFrame {
     
     public List<LogEntry> getDanhSachLog() { return danhSachLog; }
 
-    // --- CÁC HÀM TIỆN ÍCH UI (DIALOG, TIMER) ---
 
     private void batDauDemGioLamViec() {
         startSessionTime = System.currentTimeMillis();
@@ -413,7 +395,7 @@ public class QuanLyNhanVienGUI extends JFrame {
         sessionTimer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Có thể cập nhật UI nếu cần (hiện tại Sidebar không hiển thị giờ để tối giản)
+                
             }
         });
         sessionTimer.start();
@@ -422,7 +404,7 @@ public class QuanLyNhanVienGUI extends JFrame {
     public void hienThiManHinhDangNhap() {
         JDialog loginDialog = new JDialog(this, "Đăng nhập Hệ thống", true);
         loginDialog.setSize(400, 280);
-        loginDialog.setLayout(null); // Layout tự do để dùng setBounds
+        loginDialog.setLayout(null);
         loginDialog.setLocationRelativeTo(null);
         loginDialog.getContentPane().setBackground(Color.WHITE);
         loginDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
@@ -434,7 +416,6 @@ public class QuanLyNhanVienGUI extends JFrame {
             }
         });
 
-        // 1. Tiêu đề
         JLabel lblTitle = new JLabel("LOGIN ERP SYSTEM");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblTitle.setForeground(new Color(30, 41, 59));
@@ -442,7 +423,6 @@ public class QuanLyNhanVienGUI extends JFrame {
         lblTitle.setBounds(0, 20, 400, 30);
         loginDialog.add(lblTitle);
 
-        // 2. Ô nhập Tài khoản
         JLabel lblUser = new JLabel("Tài khoản:");
         lblUser.setBounds(50, 65, 100, 20);
         JTextField txtUser = new JTextField();
@@ -450,17 +430,14 @@ public class QuanLyNhanVienGUI extends JFrame {
         loginDialog.add(lblUser);
         loginDialog.add(txtUser);
 
-        // 3. Ô nhập Mật khẩu (Đã sửa lỗi hiển thị)
         JLabel lblPass = new JLabel("Mật khẩu:");
         lblPass.setBounds(50, 125, 100, 20);
         JPasswordField txtPass = new JPasswordField();
         txtPass.setBounds(50, 145, 285, 30);
-        loginDialog.add(lblPass);      // Thêm nhãn
-        loginDialog.add(txtPass);      // <--- ĐÃ THÊM: Hiển thị box mật khẩu
+        loginDialog.add(lblPass);
+        loginDialog.add(txtPass);
         
-        // Xử lý sự kiện Enter ở ô mật khẩu thì tự đăng nhập luôn
         txtPass.addActionListener(e -> {
-             // Tự động click nút đăng nhập khi ấn Enter
              for (Component c : loginDialog.getContentPane().getComponents()) {
                  if (c instanceof ModernButton && ((ModernButton)c).getText().equals("ĐĂNG NHẬP")) {
                      ((ModernButton)c).doClick();
@@ -468,7 +445,6 @@ public class QuanLyNhanVienGUI extends JFrame {
              }
         });
 
-        // 4. Các nút bấm
         ModernButton btnLogin = new ModernButton("ĐĂNG NHẬP");
         btnLogin.setBounds(50, 195, 135, 35);
         loginDialog.add(btnLogin);
@@ -477,7 +453,6 @@ public class QuanLyNhanVienGUI extends JFrame {
         btnExit.setBounds(200, 195, 135, 35);
         loginDialog.add(btnExit);
 
-        // Logic xử lý đăng nhập
         btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -500,7 +475,6 @@ public class QuanLyNhanVienGUI extends JFrame {
 
         btnExit.addActionListener(e -> System.exit(0));
         
-        // Đặt nút mặc định là Login (để ấn Enter là chạy)
         loginDialog.getRootPane().setDefaultButton(btnLogin); 
         loginDialog.setVisible(true);
     }
@@ -578,7 +552,6 @@ public class QuanLyNhanVienGUI extends JFrame {
         if (tabNhatKy != null) tabNhatKy.refreshLogTable();
     }
 
-    // --- DELEGATE METHODS (CÁC TAB CON GỌI VỀ) ---
     public void refreshBaoCaoTab() { if (tabBaoCao != null) tabBaoCao.refreshBaoCao(); }
     public void refreshLuongTable() { if (tabLuong != null) tabLuong.refreshLuongTable(); }
     public void locNhanVienTheoPhongBan() { if (tabPhongBan != null) tabPhongBan.locNhanVienTheoPhongBan(); }
@@ -590,7 +563,6 @@ public class QuanLyNhanVienGUI extends JFrame {
     } 
      
     public static void main(String[] args) {
-        // Set Look and Feel của hệ thống để mượt hơn
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {}

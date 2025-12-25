@@ -33,15 +33,15 @@ public class TabTuyenDung extends JPanel {
         setBackground(new Color(241, 245, 249)); 
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Đảm bảo bảng Database tồn tại (Phòng trường hợp DatabaseHandler chưa có)
+        //Đảm bảo bảng Database tồn tại
         ensureTableExists();
 
-        // --- 1. TOOLBAR ---
+        //TOOLBAR
         RoundedPanel pnlToolbar = new RoundedPanel(15, Color.WHITE);
         pnlToolbar.setPreferredSize(new Dimension(1000, 80));
         pnlToolbar.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 20));
 
-        // Tìm kiếm
+        //Tìm kiếm
         pnlToolbar.add(new JLabel("Tìm hồ sơ:"));
         txtTimKiem = new JTextField(20);
         txtTimKiem.setPreferredSize(new Dimension(250, 35));
@@ -56,7 +56,7 @@ public class TabTuyenDung extends JPanel {
 
         pnlToolbar.add(Box.createHorizontalStrut(30));
 
-        // Các nút chức năng
+        //Các nút chức năng
         btnThem = new ModernButton("+ Ứng Viên", new Color(22, 163, 74), new Color(21, 128, 61));
         btnThem.setPreferredSize(new Dimension(120, 35));
         
@@ -72,7 +72,7 @@ public class TabTuyenDung extends JPanel {
         pnlToolbar.add(btnThem); pnlToolbar.add(btnSua); pnlToolbar.add(btnXoa); pnlToolbar.add(btnRefresh);
         add(pnlToolbar, BorderLayout.NORTH);
 
-        // --- 2. BẢNG DỮ LIỆU ---
+        //BẢNG DỮ LIỆU
         String[] columns = {"Mã UV", "Họ Tên", "Vị Trí", "SĐT", "Email", "Ngày Nộp", "Trạng Thái"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
@@ -86,7 +86,6 @@ public class TabTuyenDung extends JPanel {
         tableUV.setShowVerticalLines(false);
         tableUV.setGridColor(new Color(241, 245, 249));
 
-        // Custom render cho cột Trạng Thái để đổi màu chữ cho đẹp
         tableUV.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -116,7 +115,7 @@ public class TabTuyenDung extends JPanel {
         tableContainer.add(scrollPane);
         add(tableContainer, BorderLayout.CENTER);
 
-        // --- 3. LOGIC ---
+        //LOGIC
         setupActions();
         loadDataFromDB(null);
     }
@@ -137,12 +136,12 @@ public class TabTuyenDung extends JPanel {
     }
 
     private void setupActions() {
-        // Tìm kiếm
+        //Tìm kiếm
         ActionListener searchAction = e -> loadDataFromDB(txtTimKiem.getText().trim());
         btnTimKiem.addActionListener(searchAction);
         txtTimKiem.addActionListener(searchAction);
 
-        // Thêm
+        //Thêm
         btnThem.addActionListener(e -> {
             DialogThemUngVien dialog = new DialogThemUngVien(parent, null, null, null, null, null, null);
             dialog.setVisible(true);
@@ -172,14 +171,14 @@ public class TabTuyenDung extends JPanel {
             }
         });
 
-        // Sửa
+        //Sửa
         btnSua.addActionListener(e -> {
             int row = tableUV.getSelectedRow();
             if (row < 0) {
                 Toast.showError("Chọn ứng viên cần sửa!");
                 return;
             }
-            // Lấy dữ liệu từ bảng để điền vào Dialog
+            //Lấy dữ liệu từ bảng để điền vào Dialog
             String maUV = (String) tableModel.getValueAt(row, 0);
             String hoTen = (String) tableModel.getValueAt(row, 1);
             String viTri = (String) tableModel.getValueAt(row, 2);
@@ -211,7 +210,7 @@ public class TabTuyenDung extends JPanel {
             }
         });
 
-        // Xóa
+        //Xóa
         btnXoa.addActionListener(e -> {
             int row = tableUV.getSelectedRow();
             if (row < 0) {
@@ -236,7 +235,7 @@ public class TabTuyenDung extends JPanel {
             }
         });
 
-        // Refresh
+        //Refresh
         btnRefresh.addActionListener(e -> {
             txtTimKiem.setText("");
             loadDataFromDB(null);
@@ -244,7 +243,7 @@ public class TabTuyenDung extends JPanel {
         });
     }
 
-    // Load dữ liệu từ DB lên bảng
+    //Load dữ liệu từ DB lên bảng
     private void loadDataFromDB(String keyword) {
         tableModel.setRowCount(0);
         String sql = "SELECT * FROM tuyen_dung";
@@ -271,7 +270,7 @@ public class TabTuyenDung extends JPanel {
         }
     }
 
-    // Sinh mã UV tự động (UV001, UV002...)
+    //Sinh mã UV tự động (UV001, UV002...)
     private String generateNextMaUV() {
         int maxId = 0;
         try (Connection conn = DatabaseHandler.connect();

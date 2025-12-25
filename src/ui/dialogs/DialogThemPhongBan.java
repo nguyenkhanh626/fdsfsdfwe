@@ -12,7 +12,6 @@ public class DialogThemPhongBan extends JDialog {
     private boolean isConfirmed = false;
     private boolean isEditMode = false;
     
-    // UI
     private JTextField txtMaPB, txtTenPB;
     private JTextArea txtMoTa;
     private ModernButton btnSave, btnCancel;

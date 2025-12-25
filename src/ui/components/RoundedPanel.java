@@ -27,7 +27,7 @@ public class RoundedPanel extends JPanel {
         super();
         this.cornerRadius = radius;
         this.backgroundColor = bgColor;
-        setOpaque(false); // Bắt buộc để vẽ background thủ công
+        setOpaque(false);
     }
 
     @Override
@@ -35,31 +35,29 @@ public class RoundedPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         
-        // Bật khử răng cưa để đường cong mượt mà
+        //Bật khử răng cưa để đường cong mượt
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         int width = getWidth();
         int height = getHeight();
         int shadowGap = hasShadow ? shadowSize : 0;
 
-        // Vẽ bóng (Shadow)
+        //Vẽ bóng
         if (hasShadow) {
             g2.setColor(new Color(shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), shadowOpacity));
-            // Vẽ bóng lệch một chút xuống dưới và sang phải
             g2.fillRoundRect(shadowGap, shadowGap, width - shadowGap * 2, height - shadowGap * 2, cornerRadius, cornerRadius);
         }
 
-        // Vẽ nền chính (Background)
+        //Vẽ nền chính (Background)
         g2.setColor(backgroundColor);
-        // Nếu có bóng thì vẽ nhỏ lại một chút để lộ bóng ra
         g2.fillRoundRect(0, 0, width - (hasShadow ? shadowGap : 0), height - (hasShadow ? shadowGap : 0), cornerRadius, cornerRadius);
         
-        // Vẽ viền (Border) nhẹ nếu cần
+        //Vẽ viền (Border)
         g2.setColor(new Color(200, 200, 200, 50));
         g2.drawRoundRect(0, 0, width - (hasShadow ? shadowGap : 0) - 1, height - (hasShadow ? shadowGap : 0) - 1, cornerRadius, cornerRadius);
     }
 
-    // --- Getters & Setters (Giúp tăng dòng code và tùy biến dễ dàng) ---
+    //Getters & Setters
 
     public void setCornerRadius(int radius) {
         this.cornerRadius = radius;

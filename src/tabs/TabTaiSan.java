@@ -32,7 +32,7 @@ public class TabTaiSan extends JPanel {
         setBackground(new Color(241, 245, 249)); 
         setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // 1. Đảm bảo DB có đủ cột (Fix lỗi thiếu cột gia_tri)
+        //Đảm bảo DB có đủ cột
         ensureTableExists();
 
         add(createInputPanel(), BorderLayout.NORTH);
@@ -45,19 +45,19 @@ public class TabTaiSan extends JPanel {
         try (Connection conn = DatabaseHandler.connect();
              Statement stmt = conn.createStatement()) {
             
-            // Tạo bảng nếu chưa có
+            //Tạo bảng nếu chưa có
             String sql = "CREATE TABLE IF NOT EXISTS tai_san (" +
                          "ma_ts TEXT PRIMARY KEY, ten_ts TEXT, tinh_trang TEXT, gia_tri REAL, ghi_chu TEXT)";
             stmt.execute(sql);
 
-            // FIX LỖI: Thêm cột nếu thiếu (do DB cũ)
+            
             try { stmt.execute("ALTER TABLE tai_san ADD COLUMN gia_tri REAL DEFAULT 0"); } catch (Exception e) {}
             try { stmt.execute("ALTER TABLE tai_san ADD COLUMN ghi_chu TEXT"); } catch (Exception e) {}
             
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    // --- PANEL NHẬP LIỆU ---
+    //PANEL NHẬP LIỆU
     private JPanel createInputPanel() {
         RoundedPanel pnl = new RoundedPanel(15, Color.WHITE);
         pnl.setLayout(new GridBagLayout());

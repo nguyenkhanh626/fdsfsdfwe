@@ -43,10 +43,10 @@ public class TabDuAn extends JPanel
         setBackground(new Color(241, 245, 249)); 
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // 1. Tạo bảng và Cột thiếu
+        //Tạo bảng và Cột thiếu
         ensureTableExists();
 
-        // --- GIAO DIỆN ---
+        //GIAO DIỆN
         RoundedPanel crudPanel = new RoundedPanel(15, Color.WHITE);
         crudPanel.setLayout(new BorderLayout(5, 5));
         crudPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -194,10 +194,10 @@ public class TabDuAn extends JPanel
         }
         if (nvFound == null) { JOptionPane.showMessageDialog(this, "Mã NV không tồn tại!"); return; }
 
-        // --- CHECK TRÙNG LẶP ---
+        //CHECK TRÙNG LẶP
         try (Connection conn = DatabaseHandler.connect()) {
-            
-            // 1. Kiểm tra xem NV đã có trong dự án này chưa
+
+            //Kiểm tra xem NV đã có trong dự án này chưa
             String checkSql = "SELECT COUNT(*) FROM phan_cong WHERE ma_da = ? AND ma_nv = ?";
             try (PreparedStatement pCheck = conn.prepareStatement(checkSql)) {
                 pCheck.setString(1, selectedDA.getMaDuAn());
@@ -209,14 +209,14 @@ public class TabDuAn extends JPanel
                 }
             }
 
-            // 2. Thêm vào bảng phân công
+            //Thêm vào bảng phân công
             try (PreparedStatement p = conn.prepareStatement("INSERT INTO phan_cong(ma_da, ma_nv) VALUES(?,?)")) {
                 p.setString(1, selectedDA.getMaDuAn());
                 p.setString(2, maNV);
                 p.executeUpdate();
             }
 
-            // 3. Cập nhật điểm thưởng
+            //Cập nhật điểm thưởng
             int diemThuong = selectedDA.getDoPhucTap();
             nvFound.addDiemThuongDuAn(diemThuong);
              
