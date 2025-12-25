@@ -5,7 +5,7 @@ import javax.swing.table.DefaultTableModel;
 
 import MainApp.*;
 import dataa.*;
-import doituong.*;
+import objects.*;
 
 import java.awt.*;
 import java.sql.Connection;

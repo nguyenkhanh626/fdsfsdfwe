@@ -3,7 +3,7 @@ package tabs;
 import javax.swing.*;
 
 import MainApp.*;
-import doituong.*;
+import objects.*;
 
 import java.awt.*;
 import java.io.File;

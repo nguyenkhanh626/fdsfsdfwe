@@ -7,8 +7,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
 import MainApp.*;
-import doituong.*;
 import dataa.*;
+import objects.*;
 
 import java.awt.*;
 import java.awt.event.*;

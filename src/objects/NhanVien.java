@@ -1,4 +1,4 @@
-package doituong;
+package objects;
 public class NhanVien {
 
     private String maNhanVien;
