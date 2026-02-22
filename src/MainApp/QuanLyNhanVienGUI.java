@@ -576,5 +576,5 @@ public class QuanLyNhanVienGUI extends JFrame {
             }
         });
     }
-    //123
+    ////1234
 }
